@@ -63,43 +63,17 @@
 /******/ 	__webpack_require__.p = "assets";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 2);
+/******/ 	return __webpack_require__(__webpack_require__.s = 3);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
 /***/ (function(module, exports, __webpack_require__) {
 
-// style-loader: Adds some css to the DOM by adding a <style> tag
-
-// load the styles
-var content = __webpack_require__(5);
-if(typeof content === 'string') content = [[module.i, content, '']];
-// add the styles to the DOM
-var update = __webpack_require__(9)(content, {});
-if(content.locals) module.exports = content.locals;
-// Hot Module Replacement
-if(false) {
-	// When the styles change, update the <style> tags
-	if(!content.locals) {
-		module.hot.accept("!!../node_modules/css-loader/index.js!../node_modules/postcss-loader/index.js!./app.css", function() {
-			var newContent = require("!!../node_modules/css-loader/index.js!../node_modules/postcss-loader/index.js!./app.css");
-			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-			update(newContent);
-		});
-	}
-	// When the module is disposed, remove the <style> tags
-	module.hot.dispose(function() { update(); });
-}
-
-/***/ }),
-/* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
 "use strict";
 
 
-__webpack_require__(0);
+__webpack_require__(1);
 
 var board = void 0;
 var notes = {};
@@ -145,18 +119,110 @@ var init = function init() {
 module.exports.init = init;
 
 /***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(8);
+if(typeof content === 'string') content = [[module.i, content, '']];
+// add the styles to the DOM
+var update = __webpack_require__(12)(content, {});
+if(content.locals) module.exports = content.locals;
+// Hot Module Replacement
+if(false) {
+	// When the styles change, update the <style> tags
+	if(!content.locals) {
+		module.hot.accept("!!../node_modules/css-loader/index.js!../node_modules/postcss-loader/index.js!./app.css", function() {
+			var newContent = require("!!../node_modules/css-loader/index.js!../node_modules/postcss-loader/index.js!./app.css");
+			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+			update(newContent);
+		});
+	}
+	// When the module is disposed, remove the <style> tags
+	module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
 /* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-__webpack_require__(0);
+var client = __webpack_require__(4);
+var board = __webpack_require__(0);
 
-var ui = __webpack_require__(12);
+// DOM elements
+var makeButton = void 0;
+var joinButton = void 0;
+var connectButton = void 0;
+var backButton = void 0;
+var landingScreen = void 0;
+var landingControls = void 0;
+var connectControls = void 0;
+
+// connection logic variables
+var connectionType = void 0;
+
+var showConnectControls = function showConnectControls() {
+  TweenMax.to(landingControls, 0.3, { opacity: 0, onComplete: function onComplete() {
+      landingControls.style.display = 'none';
+    } });
+  connectControls.style.display = 'block';
+  TweenMax.to(connectControls, 0.3, { opacity: 1, delay: 0.2 });
+  TweenMax.to(landingScreen, 0.5, { height: '400px' });
+};
+
+var hideConnectControls = function hideConnectControls() {
+  TweenMax.to(connectControls, 0.3, { opacity: 0, onComplete: function onComplete() {
+      connectControls.style.display = 'none';
+    } });
+  landingControls.style.display = 'block';
+  TweenMax.to(landingControls, 0.3, { opacity: 1, delay: 0.2 });
+  TweenMax.to(landingScreen, 0.5, { height: '300px' });
+};
+
+var connect = function connect() {};
+
+var init = function init() {
+  // get references to DOM elements and hook up events
+  landingScreen = document.querySelector('#landing-screen');
+  landingControls = document.querySelector('#landing-controls');
+  connectControls = document.querySelector('#connect-controls');
+
+  makeButton = document.querySelector('#make-button');
+  makeButton.addEventListener('click', function () {
+    showConnectControls();
+    connectionType = 'make';
+  });
+  joinButton = document.querySelector('#join-button');
+  joinButton.addEventListener('click', function () {
+    showConnectControls();
+    connectionType = 'join';
+  });
+  connectButton = document.querySelector('#connect-button');
+  connectButton.addEventListener('click', connect);
+  backButton = document.querySelector('#back-button');
+  backButton.addEventListener('click', hideConnectControls);
+};
+
+module.exports.init = init;
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+__webpack_require__(1);
+
+var ui = __webpack_require__(2);
 //const client = require('./client');
 //const host = require('./host');
-var board = __webpack_require__(1);
+var board = __webpack_require__(0);
 
 var init = function init() {
   ui.init();
@@ -166,7 +232,57 @@ var init = function init() {
 window.addEventListener('load', init);
 
 /***/ }),
-/* 3 */
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/*
+  client.js
+  Module to handle socketIO client functionality
+
+  by Aaron Romel
+*/
+
+var board = __webpack_require__(0);
+var host = __webpack_require__(5);
+
+var socket = void 0;
+
+// connect socketio server
+var connect = function connect(connectData) {
+  // connect to socketio server
+  socket = io.connect();
+
+  // attempt connection with websocket server
+  socket.emit('attemptConnect', connectData);
+};
+
+// allow other modules to emit data to server
+var emit = function emit(type, data) {
+  socket.emit(type, data);
+};
+
+// disconnect from socket server
+var disconnect = function disconnect() {
+  socket.disconnect();
+  socket = undefined;
+};
+
+module.exports.connect = connect;
+module.exports.emit = emit;
+module.exports.disconnect = disconnect;
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/***/ }),
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -287,7 +403,7 @@ function fromByteArray (uint8) {
 
 
 /***/ }),
-/* 4 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -301,9 +417,9 @@ function fromByteArray (uint8) {
 
 
 
-var base64 = __webpack_require__(3)
-var ieee754 = __webpack_require__(7)
-var isArray = __webpack_require__(8)
+var base64 = __webpack_require__(6)
+var ieee754 = __webpack_require__(10)
+var isArray = __webpack_require__(11)
 
 exports.Buffer = Buffer
 exports.SlowBuffer = SlowBuffer
@@ -2081,13 +2197,13 @@ function isnan (val) {
   return val !== val // eslint-disable-line no-self-compare
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(14)))
 
 /***/ }),
-/* 5 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(6)(undefined);
+exports = module.exports = __webpack_require__(9)(undefined);
 // imports
 
 
@@ -2098,7 +2214,7 @@ exports.push([module.i, "* {\n  margin: 0;\n  padding: 0; }\n\n*:focus {\n  outl
 
 
 /***/ }),
-/* 6 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(Buffer) {/*
@@ -2177,10 +2293,10 @@ function toComment(sourceMap) {
   return '/*# ' + data + ' */';
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4).Buffer))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(7).Buffer))
 
 /***/ }),
-/* 7 */
+/* 10 */
 /***/ (function(module, exports) {
 
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
@@ -2270,7 +2386,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
 
 
 /***/ }),
-/* 8 */
+/* 11 */
 /***/ (function(module, exports) {
 
 var toString = {}.toString;
@@ -2281,7 +2397,7 @@ module.exports = Array.isArray || function (arr) {
 
 
 /***/ }),
-/* 9 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*
@@ -2318,7 +2434,7 @@ var stylesInDom = {},
 	singletonElement = null,
 	singletonCounter = 0,
 	styleElementsInsertedAtTop = [],
-	fixUrls = __webpack_require__(10);
+	fixUrls = __webpack_require__(13);
 
 module.exports = function(list, options) {
 	if(typeof DEBUG !== "undefined" && DEBUG) {
@@ -2577,7 +2693,7 @@ function updateLink(linkElement, options, obj) {
 
 
 /***/ }),
-/* 10 */
+/* 13 */
 /***/ (function(module, exports) {
 
 
@@ -2672,7 +2788,7 @@ module.exports = function (css) {
 
 
 /***/ }),
-/* 11 */
+/* 14 */
 /***/ (function(module, exports) {
 
 var g;
@@ -2696,122 +2812,6 @@ try {
 // easier to handle this case. if(!global) { ...}
 
 module.exports = g;
-
-
-/***/ }),
-/* 12 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var client = __webpack_require__(13);
-var board = __webpack_require__(1);
-
-// DOM elements
-var makeButton = void 0;
-var joinButton = void 0;
-var connectButton = void 0;
-var backButton = void 0;
-var landingScreen = void 0;
-var landingControls = void 0;
-var connectControls = void 0;
-
-// connection logic variables
-var connectionType = void 0;
-
-var showConnectControls = function showConnectControls() {
-  TweenMax.to(landingControls, 0.3, { opacity: 0, onComplete: function onComplete() {
-      landingControls.style.display = 'none';
-    } });
-  connectControls.style.display = 'block';
-  TweenMax.to(connectControls, 0.3, { opacity: 1, delay: 0.2 });
-  TweenMax.to(landingScreen, 0.5, { height: '400px' });
-};
-
-var hideConnectControls = function hideConnectControls() {
-  TweenMax.to(connectControls, 0.3, { opacity: 0, onComplete: function onComplete() {
-      connectControls.style.display = 'none';
-    } });
-  landingControls.style.display = 'block';
-  TweenMax.to(landingControls, 0.3, { opacity: 1, delay: 0.2 });
-  TweenMax.to(landingScreen, 0.5, { height: '300px' });
-};
-
-var connect = function connect() {};
-
-var init = function init() {
-  // get references to DOM elements and hook up events
-  landingScreen = document.querySelector('#landing-screen');
-  landingControls = document.querySelector('#landing-controls');
-  connectControls = document.querySelector('#connect-controls');
-
-  makeButton = document.querySelector('#make-button');
-  makeButton.addEventListener('click', function () {
-    showConnectControls();
-    connectionType = 'make';
-  });
-  joinButton = document.querySelector('#join-button');
-  joinButton.addEventListener('click', function () {
-    showConnectControls();
-    connectionType = 'join';
-  });
-  connectButton = document.querySelector('#connect-button');
-  connectButton.addEventListener('click', connect);
-  backButton = document.querySelector('#back-button');
-  backButton.addEventListener('click', hideConnectControls);
-};
-
-module.exports.init = init;
-
-/***/ }),
-/* 13 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-/*
-  client.js
-  Module to handle socketIO client functionality
-
-  by Aaron Romel
-*/
-
-var board = __webpack_require__(1);
-var host = __webpack_require__(14);
-
-var socket = void 0;
-
-// connect socketio server
-var connect = function connect(connectData) {
-  // connect to socketio server
-  socket = io.connect();
-
-  // attempt connection with websocket server
-  socket.emit('attemptConnect', connectData);
-};
-
-// allow other modules to emit data to server
-var emit = function emit(type, data) {
-  socket.emit(type, data);
-};
-
-// disconnect from socket server
-var disconnect = function disconnect() {
-  socket.disconnect();
-  socket = undefined;
-};
-
-module.exports.connect = connect;
-module.exports.emit = emit;
-module.exports.disconnect = disconnect;
-
-/***/ }),
-/* 14 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
 
 
 /***/ })
