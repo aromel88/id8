@@ -1,0 +1,23 @@
+// color scheme
+$red: #F44336;
+$blue: #3F51B5;
+
+// background colors
+$dark-gray: #E0E0E0;
+$medium-gray: #F5F5F5;
+$light-gray: #FAFAFA;
+
+// reset styles
+* {
+  margin: 0;
+  padding: 0;
+}
+*:focus {
+  outline: none;
+}
+
+body {
+  width: 100%;
+  height: 100vh;
+  background-color: $red;
+}

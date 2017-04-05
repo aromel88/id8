@@ -1,0 +1,119 @@
+* {
+  margin: 0;
+  padding: 0; }
+
+*:focus {
+  outline: none; }
+
+body {
+  width: 100%;
+  height: 100vh;
+  background-color: #F44336; }
+
+/*
+  _landing.scss
+  styles for landing screen
+
+  by Aaron Romel
+*/
+.button, #make-button, #join-button, #connect-button, #back-button {
+  display: block;
+  width: 212px;
+  height: 40px;
+  margin: auto;
+  background-color: #3F51B5;
+  color: white;
+  box-shadow: -3px -3px 2px #E0E0E0;
+  border: none;
+  border-radius: 3px;
+  font-size: 1.1em;
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, 0);
+  transition: width 0.15s, height 0.15s, box-shadow 0.15s; }
+  .button:hover, #make-button:hover, #join-button:hover, #connect-button:hover, #back-button:hover {
+    cursor: pointer;
+    box-shadow: -7px -7px 7px #E0E0E0;
+    width: 217px;
+    height: 45px; }
+  .button:active, #make-button:active, #join-button:active, #connect-button:active, #back-button:active {
+    box-shadow: -3px -3px 2px #E0E0E0;
+    width: 212px;
+    height: 40px; }
+
+#landing-screen {
+  position: absolute;
+  background-color: white;
+  width: 500px;
+  height: 300px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 5px;
+  box-shadow: -7px -7px 5px rgba(0, 0, 0, 0.4); }
+
+#landing-screen h1 {
+  width: 100%;
+  text-align: center;
+  position: relative;
+  top: 50px; }
+
+#make-button {
+  top: 150px; }
+
+#join-button {
+  top: 200px; }
+
+/* connect controls */
+#connect-controls {
+  opacity: 0;
+  text-align: center;
+  display: none; }
+
+input[type='text'] {
+  display: block;
+  margin: auto;
+  width: 200px;
+  padding: 4px;
+  font-size: 1em;
+  border-radius: 4px;
+  border: 2px solid #E0E0E0;
+  margin-bottom: 10px;
+  position: relative;
+  top: 85px; }
+
+#connect-button {
+  top: 230px; }
+
+#back-button {
+  background-color: #F44336;
+  top: 280px; }
+
+#board {
+  display: none;
+  position: relative;
+  height: 100vh;
+  width: 100%;
+  background-color: beige;
+  margin: auto;
+  overflow: auto; }
+
+.note {
+  width: 200px;
+  height: 100px;
+  background-color: red;
+  position: absolute;
+  transition: left .1s, top .1s; }
+
+.note:hover {
+  opacity: 0.6;
+  cursor: pointer; }
+
+.note:active {
+  opacity: 1;
+  cursor: grab; }
+
+.note p {
+  pointer-events: none; }
+
+/*# sourceMappingURL=app.css.map */

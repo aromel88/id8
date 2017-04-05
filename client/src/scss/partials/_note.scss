@@ -1,0 +1,21 @@
+.note {
+  width: 200px;
+  height: 100px;
+  background-color: red;
+  position: absolute;
+  transition: left .1s, top .1s;
+}
+
+.note:hover {
+  opacity: 0.6;
+  cursor: pointer;
+}
+
+.note:active {
+  opacity: 1;
+  cursor: grab;
+}
+
+.note p {
+  pointer-events: none;
+}
