@@ -3,18 +3,25 @@ const client = require('./client');
 const board = require('./board');
 
 // DOM elements
+let landingScreen;
+let landingControls;
+let connectControls;
 let makeButton;
 let joinButton;
 let connectButton;
 let backButton;
-let landingScreen;
-let landingControls;
-let connectControls;
+let roomInput;
+let nameInput;
 
 // connection logic variables
 let connectionType;
 
-const showConnectControls = () => {
+const showConnectControls = (type) => {
+  if (type === 'join') {
+    roomInput.style.display = 'block';
+  } else {
+    roomInput.style.display = 'none';
+  }
   TweenMax.to(landingControls, 0.3, { opacity: 0, onComplete: () => {
     landingControls.style.display = 'none';
   }});
@@ -32,8 +39,24 @@ const hideConnectControls = () => {
   TweenMax.to(landingScreen, 0.5, { height: '300px'});
 };
 
-const connect = () => {
+const hideAll = () => {
+  TweenMax.to(landingScreen, 0.5, {
+    opacity: 0,
+    onComplete: () => {
+      landingScreen.style.display = 'none';
+    }
+  });
+  TweenMax.to(document.querySelector('body'), 0.5, { backgroundColor: "#3F51B5" });
+};
 
+const connect = () => {
+  const connectData = {
+    type: connectionType,
+    userName: nameInput.value,
+    roomCode: roomInput.value,
+  };
+
+  client.connect(connectData);
 };
 
 const init = () => {
@@ -44,18 +67,22 @@ const init = () => {
 
   makeButton = document.querySelector('#make-button');
   makeButton.addEventListener('click', () => {
-    showConnectControls();
+    showConnectControls('make');
     connectionType = 'make';
   });
   joinButton = document.querySelector('#join-button');
   joinButton.addEventListener('click', () => {
-    showConnectControls();
+    showConnectControls('join');
     connectionType = 'join';
   });
   connectButton = document.querySelector('#connect-button');
   connectButton.addEventListener('click', connect);
   backButton = document.querySelector('#back-button');
   backButton.addEventListener('click', hideConnectControls);
+
+  roomInput = document.querySelector('#room-input');
+  nameInput = document.querySelector('#name-input');
 };
 
 module.exports.init = init;
+module.exports.hideAll = hideAll;

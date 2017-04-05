@@ -14,7 +14,9 @@ const rooms = {};
 
 const onJoin = (sock) => {
   const socket = sock;
-  socket.on('attemptConnect', connectionHandler.attemptConnect);
+  socket.on('attemptConnect', (data) => {
+    connectionHandler.attemptConnect(socket, data);
+  });
 };
 
 const onMsg = (sock) => {
@@ -25,7 +27,7 @@ const onDisconnect = (sock) => {
   const socket = sock;
 
   socket.on('disconnect', () => {
-    connectionHandler.handleDisconnect(socket);
+    // connectionHandler.handleDisconnect(socket);
   });
 };
 

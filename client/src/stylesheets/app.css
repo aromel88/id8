@@ -91,19 +91,18 @@ input[type='text'] {
 
 #board {
   display: none;
-  position: relative;
   height: 100vh;
   width: 100%;
-  background-color: beige;
-  margin: auto;
   overflow: auto; }
 
 .note {
-  width: 200px;
+  width: 100px;
   height: 100px;
-  background-color: red;
+  background-color: white;
   position: absolute;
-  transition: left .1s, top .1s; }
+  transition: left .1s, top .1s;
+  border-radius: 4px;
+  box-shadow: -4px -4px 2px rgba(0, 0, 0, 0.4); }
 
 .note:hover {
   opacity: 0.6;
