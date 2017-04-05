@@ -1,14 +1,24 @@
 {
   "name": "id8",
   "version": "1.0.0",
-  "description": "Project 2 IGME590",
+  "description": "Brainstorming app",
   "main": "app.js",
   "scripts": {
-    "pretest": "eslint ./src --fix",
+    "pretest": "eslint ./src/ --fix",
     "test": "echo \"Tests Complete\"",
     "nodemon": "nodemon --watch ./ ./src/app.js",
     "start": "node ./src/app.js"
   },
   "author": "Aaron Romel",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^3.19.0",
+    "eslint-config-airbnb": "^14.1.0",
+    "eslint-plugin-import": "^2.2.0",
+    "nodemon": "^1.11.0"
+  },
+  "dependencies": {
+    "express": "^4.15.2",
+    "socket.io": "^1.7.3"
+  }
 }

@@ -19,7 +19,6 @@ const onJoin = (sock) => {
 
 const onMsg = (sock) => {
   const socket = sock;
-
 };
 
 const onDisconnect = (sock) => {
