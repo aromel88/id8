@@ -29,6 +29,7 @@ const connect = (connectData) => {
   socket = io.connect();
   socket.on('createSuccess', createSuccess);
   socket.on('joinSuccess', joinSuccess);
+  socket.on('noteAdded', board.noteAdded);
   socket.on('noteDragged', board.noteDragged);
 
   // attempt connection with websocket server

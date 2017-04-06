@@ -150,8 +150,13 @@ var setup = function setup(userName, noteData) {
       createNote(noteData[key].x, noteData[key].y, noteData[key].text, noteData[key].noteID);
     });
   } else {
-    // there are no notes, make element show totell how to make notes
+    // there are no notes, tell how to make notes
   }
+};
+
+var noteAdded = function noteAdded(data) {
+  notes[data.noteID] = data;
+  createNote(data.x, data.y, data.text, data.noteID);
 };
 
 var addNote = function addNote(e) {
@@ -181,6 +186,7 @@ var init = function init() {
 
 module.exports.init = init;
 module.exports.setup = setup;
+module.exports.noteAdded = noteAdded;
 module.exports.noteDragged = noteDragged;
 module.exports.notes = notes;
 
@@ -343,6 +349,7 @@ var connect = function connect(connectData) {
   socket = io.connect();
   socket.on('createSuccess', createSuccess);
   socket.on('joinSuccess', joinSuccess);
+  socket.on('noteAdded', board.noteAdded);
   socket.on('noteDragged', board.noteDragged);
 
   // attempt connection with websocket server

@@ -22,12 +22,8 @@ const onJoin = (sock) => {
 
 const onMsg = (sock) => {
   const socket = sock;
-  socket.on('addNote', (data) => {
-    board.newNote(socket, data);
-  });
-  socket.on('dragNote', (data) => {
-    socket.broadcast.to(socket.roomCode).emit('noteDragged', data);
-  });
+  socket.on('addNote', (data) => { board.addNote(socket, data); });
+  socket.on('dragNote', (data) => { board.dragNote(socket, data); });
 };
 
 const onDisconnect = (sock) => {

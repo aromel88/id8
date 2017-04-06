@@ -79,8 +79,13 @@ const setup = (userName, noteData) => {
       );
     });
   } else {
-    // there are no notes, make element show totell how to make notes
+    // there are no notes, tell how to make notes
   }
+};
+
+const noteAdded = (data) => {
+  notes[data.noteID] = data;
+  createNote(data.x, data.y, data.text, data.noteID);
 };
 
 const addNote = (e) => {
@@ -110,5 +115,6 @@ const init = () => {
 
 module.exports.init = init;
 module.exports.setup = setup;
+module.exports.noteAdded = noteAdded;
 module.exports.noteDragged = noteDragged;
 module.exports.notes = notes;
