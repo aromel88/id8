@@ -14,12 +14,12 @@ let roomCode;
 const createSuccess = (data) => {
   roomCode = data.roomCode;
   host.init();
-  board.setup();
+  board.setup(data.userName);
 };
 
 const joinSuccess = (data) => {
   roomCode = data.roomCode;
-  board.setup(data.notes);
+  board.setup(data.userName, data.notes);
 };
 
 // connect socketio server

@@ -3,6 +3,7 @@ const ui = require('./ui');
 
 const NOTE_SIZE = { x: 100, y: 100 };
 
+let name;
 let board;
 let notes;
 let noteElements;
@@ -37,7 +38,8 @@ const drag = (e) => {
   currentNote.style.top = `${e.clientY - currentNote.offsetHeight/2}px`;
 };
 
-const setup = (noteData) => {
+const setup = (userName, noteData) => {
+  name = userName;
   ui.hideAll();
   board.style.display = 'block';
   if (noteData) {
@@ -48,17 +50,18 @@ const setup = (noteData) => {
 };
 
 const addNote = (e) => {
-  console.log(e);
   const posX = e.clientX - NOTE_SIZE.x/2;
   const posY = e.clientY - NOTE_SIZE.y/2;
 
-  notes.push({
+  const noteID = `${name}${new Date().getTime()}`;
+  notes[noteID] = {
     x: posX,
     y: posY,
     text: '',
-    index: notes.length,
-  });
+    noteID: noteID,
+  };
   const newNote = document.createElement('div');
+  newNote.noteID = noteID;
   newNote.classList.add('note');
   newNote.style.left = `${posX}px`;
   newNote.style.top = `${posY}px`;
@@ -66,6 +69,7 @@ const addNote = (e) => {
   noteText.classList.add('note-text');
   newNote.appendChild(noteText);
   board.appendChild(newNote);
+  noteElements[noteID] = newNote;
 };
 
 const init = () => {
@@ -74,7 +78,8 @@ const init = () => {
   board.addEventListener('mousemove', drag);
   board.addEventListener('mouseup', mouseUp);
   board.addEventListener('dblclick', addNote);
-  notes = [];
+  notes = {};
+  noteElements = {};
 };
 
 module.exports.init = init;

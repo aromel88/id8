@@ -73,12 +73,13 @@
 "use strict";
 
 
-__webpack_require__(1);
+__webpack_require__(2);
 
-var ui = __webpack_require__(2);
+var ui = __webpack_require__(1);
 
 var NOTE_SIZE = { x: 100, y: 100 };
 
+var name = void 0;
 var board = void 0;
 var notes = void 0;
 var noteElements = void 0;
@@ -113,7 +114,8 @@ var drag = function drag(e) {
   currentNote.style.top = e.clientY - currentNote.offsetHeight / 2 + 'px';
 };
 
-var setup = function setup(noteData) {
+var setup = function setup(userName, noteData) {
+  name = userName;
   ui.hideAll();
   board.style.display = 'block';
   if (noteData) {
@@ -122,17 +124,18 @@ var setup = function setup(noteData) {
 };
 
 var addNote = function addNote(e) {
-  console.log(e);
   var posX = e.clientX - NOTE_SIZE.x / 2;
   var posY = e.clientY - NOTE_SIZE.y / 2;
 
-  notes.push({
+  var noteID = '' + name + new Date().getTime();
+  notes[noteID] = {
     x: posX,
     y: posY,
     text: '',
-    index: notes.length
-  });
+    noteID: noteID
+  };
   var newNote = document.createElement('div');
+  newNote.noteID = noteID;
   newNote.classList.add('note');
   newNote.style.left = posX + 'px';
   newNote.style.top = posY + 'px';
@@ -140,6 +143,7 @@ var addNote = function addNote(e) {
   noteText.classList.add('note-text');
   newNote.appendChild(noteText);
   board.appendChild(newNote);
+  noteElements[noteID] = newNote;
 };
 
 var init = function init() {
@@ -148,7 +152,8 @@ var init = function init() {
   board.addEventListener('mousemove', drag);
   board.addEventListener('mouseup', mouseUp);
   board.addEventListener('dblclick', addNote);
-  notes = [];
+  notes = {};
+  noteElements = {};
 };
 
 module.exports.init = init;
@@ -157,32 +162,6 @@ module.exports.notes = notes;
 
 /***/ }),
 /* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// style-loader: Adds some css to the DOM by adding a <style> tag
-
-// load the styles
-var content = __webpack_require__(8);
-if(typeof content === 'string') content = [[module.i, content, '']];
-// add the styles to the DOM
-var update = __webpack_require__(12)(content, {});
-if(content.locals) module.exports = content.locals;
-// Hot Module Replacement
-if(false) {
-	// When the styles change, update the <style> tags
-	if(!content.locals) {
-		module.hot.accept("!!../node_modules/css-loader/index.js!../node_modules/postcss-loader/index.js!./app.css", function() {
-			var newContent = require("!!../node_modules/css-loader/index.js!../node_modules/postcss-loader/index.js!./app.css");
-			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-			update(newContent);
-		});
-	}
-	// When the module is disposed, remove the <style> tags
-	module.hot.dispose(function() { update(); });
-}
-
-/***/ }),
-/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -277,15 +256,41 @@ module.exports.init = init;
 module.exports.hideAll = hideAll;
 
 /***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(8);
+if(typeof content === 'string') content = [[module.i, content, '']];
+// add the styles to the DOM
+var update = __webpack_require__(12)(content, {});
+if(content.locals) module.exports = content.locals;
+// Hot Module Replacement
+if(false) {
+	// When the styles change, update the <style> tags
+	if(!content.locals) {
+		module.hot.accept("!!../node_modules/css-loader/index.js!../node_modules/postcss-loader/index.js!./app.css", function() {
+			var newContent = require("!!../node_modules/css-loader/index.js!../node_modules/postcss-loader/index.js!./app.css");
+			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+			update(newContent);
+		});
+	}
+	// When the module is disposed, remove the <style> tags
+	module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
 /* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-__webpack_require__(1);
+__webpack_require__(2);
 
-var ui = __webpack_require__(2);
+var ui = __webpack_require__(1);
 //const client = require('./client');
 //const host = require('./host');
 var board = __webpack_require__(0);
@@ -320,12 +325,12 @@ var roomCode = void 0;
 var createSuccess = function createSuccess(data) {
   roomCode = data.roomCode;
   host.init();
-  board.setup();
+  board.setup(data.userName);
 };
 
 var joinSuccess = function joinSuccess(data) {
   roomCode = data.roomCode;
-  board.setup(data.notes);
+  board.setup(data.userName, data.notes);
 };
 
 // connect socketio server
