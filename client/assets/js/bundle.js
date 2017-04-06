@@ -76,6 +76,7 @@
 __webpack_require__(2);
 
 var ui = __webpack_require__(1);
+var client = __webpack_require__(4);
 
 var NOTE_SIZE = { x: 100, y: 100 };
 
@@ -114,13 +115,30 @@ var drag = function drag(e) {
   currentNote.style.top = e.clientY - currentNote.offsetHeight / 2 + 'px';
 };
 
+var createNote = function createNote(posX, posY, text, noteID) {
+  var newNote = document.createElement('div');
+  newNote.noteID = noteID;
+  newNote.classList.add('note');
+  newNote.style.left = posX + 'px';
+  newNote.style.top = posY + 'px';
+  var noteText = document.createElement('p');
+  newNote.appendChild(noteText);
+  board.appendChild(newNote);
+  noteElements[noteID] = newNote;
+};
+
 var setup = function setup(userName, noteData) {
   name = userName;
   ui.hideAll();
   board.style.display = 'block';
   if (noteData) {
-    // setup notes
-  } else {}
+    notes = noteData;
+    Object.keys(noteData).forEach(function (key) {
+      createNote(noteData[key].x, noteData[key].y, noteData[key].text, noteData[key].noteID);
+    });
+  } else {
+    // there are no notes, make element show totell how to make notes
+  }
 };
 
 var addNote = function addNote(e) {
@@ -134,16 +152,8 @@ var addNote = function addNote(e) {
     text: '',
     noteID: noteID
   };
-  var newNote = document.createElement('div');
-  newNote.noteID = noteID;
-  newNote.classList.add('note');
-  newNote.style.left = posX + 'px';
-  newNote.style.top = posY + 'px';
-  var noteText = document.createElement('p');
-  noteText.classList.add('note-text');
-  newNote.appendChild(noteText);
-  board.appendChild(newNote);
-  noteElements[noteID] = newNote;
+  createNote(posX, posY, '', noteID);
+  client.emit('addNote', notes[noteID]);
 };
 
 var init = function init() {
@@ -326,11 +336,12 @@ var createSuccess = function createSuccess(data) {
   roomCode = data.roomCode;
   host.init();
   board.setup(data.userName);
+  console.log(roomCode);
 };
 
 var joinSuccess = function joinSuccess(data) {
   roomCode = data.roomCode;
-  board.setup(data.userName, data.notes);
+  board.setup(data.userName, data.noteData);
 };
 
 // connect socketio server
@@ -338,7 +349,7 @@ var connect = function connect(connectData) {
   // connect to socketio server
   socket = io.connect();
   socket.on('createSuccess', createSuccess);
-  socket.on('joinSucceess', joinSuccess);
+  socket.on('joinSuccess', joinSuccess);
 
   // attempt connection with websocket server
   socket.emit('attemptConnect', connectData);

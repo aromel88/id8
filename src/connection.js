@@ -3,6 +3,7 @@ const xxh = require('xxhashjs');
 const server = require('./server');
 
 const attemptJoin = (sock, data) => {
+  console.log('joinattempt');
   const socket = sock;
   if (!server.rooms[data.roomCode]) {
     socket.emit('err', { msg: 'Incorrect room code' });
@@ -12,6 +13,7 @@ const attemptJoin = (sock, data) => {
   socket.name = data.userName;
   socket.admin = false;
   socket.roomCode = data.roomCode;
+  socket.join(socket.roomCode);
   const room = server.rooms[data.roomCode];
   room.users.push(socket.name);
   socket.emit('joinSuccess', {
@@ -27,11 +29,12 @@ const attemptCreate = (sock, data) => {
   socket.name = data.userName;
   socket.admin = true;
   socket.roomCode = roomCode;
+  socket.join(roomCode);
   server.rooms[roomCode] = {
+    roomCode: roomCode,
     admin: socket,
     users: [],
-    notes: [],
-    numNotes: 0,
+    notes: {},
   };
   server.rooms[roomCode].users.push(socket.name);
   socket.emit('createSuccess',

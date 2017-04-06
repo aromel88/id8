@@ -1,5 +1,6 @@
 import '../stylesheets/app.css';
 const ui = require('./ui');
+const client = require('./client');
 
 const NOTE_SIZE = { x: 100, y: 100 };
 
@@ -38,14 +39,34 @@ const drag = (e) => {
   currentNote.style.top = `${e.clientY - currentNote.offsetHeight/2}px`;
 };
 
+const createNote = (posX, posY, text, noteID) => {
+  const newNote = document.createElement('div');
+  newNote.noteID = noteID;
+  newNote.classList.add('note');
+  newNote.style.left = `${posX}px`;
+  newNote.style.top = `${posY}px`;
+  const noteText = document.createElement('p');
+  newNote.appendChild(noteText);
+  board.appendChild(newNote);
+  noteElements[noteID] = newNote;
+};
+
 const setup = (userName, noteData) => {
   name = userName;
   ui.hideAll();
   board.style.display = 'block';
   if (noteData) {
-    // setup notes
+    notes = noteData;
+    Object.keys(noteData).forEach((key) => {
+      createNote(
+        noteData[key].x,
+        noteData[key].y,
+        noteData[key].text,
+        noteData[key].noteID
+      );
+    });
   } else {
-
+    // there are no notes, make element show totell how to make notes
   }
 };
 
@@ -60,16 +81,8 @@ const addNote = (e) => {
     text: '',
     noteID: noteID,
   };
-  const newNote = document.createElement('div');
-  newNote.noteID = noteID;
-  newNote.classList.add('note');
-  newNote.style.left = `${posX}px`;
-  newNote.style.top = `${posY}px`;
-  const noteText = document.createElement('p');
-  noteText.classList.add('note-text');
-  newNote.appendChild(noteText);
-  board.appendChild(newNote);
-  noteElements[noteID] = newNote;
+  createNote(posX, posY, '', noteID);
+  client.emit('addNote', notes[noteID]);
 };
 
 const init = () => {

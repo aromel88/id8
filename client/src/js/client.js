@@ -15,11 +15,12 @@ const createSuccess = (data) => {
   roomCode = data.roomCode;
   host.init();
   board.setup(data.userName);
+  console.log(roomCode);
 };
 
 const joinSuccess = (data) => {
   roomCode = data.roomCode;
-  board.setup(data.userName, data.notes);
+  board.setup(data.userName, data.noteData);
 };
 
 // connect socketio server
@@ -27,7 +28,7 @@ const connect = (connectData) => {
   // connect to socketio server
   socket = io.connect();
   socket.on('createSuccess', createSuccess);
-  socket.on('joinSucceess', joinSuccess);
+  socket.on('joinSuccess', joinSuccess);
 
   // attempt connection with websocket server
   socket.emit('attemptConnect', connectData);

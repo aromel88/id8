@@ -8,6 +8,7 @@
 
 const socketio = require('socket.io');
 const connectionHandler = require('./connection');
+const board = require('./board');
 
 let io;
 const rooms = {};
@@ -21,6 +22,9 @@ const onJoin = (sock) => {
 
 const onMsg = (sock) => {
   const socket = sock;
+  socket.on('addNote', (data) => {
+    board.newNote(socket, data);
+  });
 };
 
 const onDisconnect = (sock) => {
