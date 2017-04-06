@@ -216,19 +216,19 @@ var showConnectControls = function showConnectControls(type) {
   }
   TweenMax.to(landingControls, 0.3, { opacity: 0, onComplete: function onComplete() {
       landingControls.style.display = 'none';
+      connectControls.style.display = 'block';
+      TweenMax.to(connectControls, 0.3, { opacity: 1, delay: 0.2 });
+      TweenMax.to(landingScreen, 0.5, { height: '600px' });
     } });
-  connectControls.style.display = 'block';
-  TweenMax.to(connectControls, 0.3, { opacity: 1, delay: 0.2 });
-  TweenMax.to(landingScreen, 0.5, { height: '400px' });
 };
 
 var hideConnectControls = function hideConnectControls() {
-  TweenMax.to(connectControls, 0.3, { opacity: 0, onComplete: function onComplete() {
+  TweenMax.to(connectControls, 0.2, { opacity: 0, onComplete: function onComplete() {
       connectControls.style.display = 'none';
+      landingControls.style.display = 'block';
+      TweenMax.to(landingControls, 0.3, { opacity: 1, delay: 0.2 });
+      TweenMax.to(landingScreen, 0.5, { height: '400px' });
     } });
-  landingControls.style.display = 'block';
-  TweenMax.to(landingControls, 0.3, { opacity: 1, delay: 0.2 });
-  TweenMax.to(landingScreen, 0.5, { height: '300px' });
 };
 
 var hideAll = function hideAll() {
@@ -238,7 +238,7 @@ var hideAll = function hideAll() {
       landingScreen.style.display = 'none';
     }
   });
-  TweenMax.to(document.querySelector('body'), 0.5, { backgroundColor: "#3F51B5" });
+  TweenMax.to(document.querySelector('body'), 0.5, { backgroundColor: "#F7B733" });
 };
 
 var connect = function connect() {
@@ -2323,7 +2323,7 @@ exports = module.exports = __webpack_require__(9)(undefined);
 
 
 // module
-exports.push([module.i, "* {\n  margin: 0;\n  padding: 0; }\n\n*:focus {\n  outline: none; }\n\nbody {\n  width: 100%;\n  height: 100vh;\n  background-color: #F44336; }\n\n/*\n  _landing.scss\n  styles for landing screen\n\n  by Aaron Romel\n*/\n.button, #make-button, #join-button, #connect-button, #back-button {\n  display: block;\n  width: 212px;\n  height: 40px;\n  margin: auto;\n  background-color: #3F51B5;\n  color: white;\n  box-shadow: -3px -3px 2px #E0E0E0;\n  border: none;\n  border-radius: 3px;\n  font-size: 1.1em;\n  position: absolute;\n  left: 50%;\n  transform: translate(-50%, 0);\n  transition: width 0.15s, height 0.15s, box-shadow 0.15s; }\n  .button:hover, #make-button:hover, #join-button:hover, #connect-button:hover, #back-button:hover {\n    cursor: pointer;\n    box-shadow: -7px -7px 7px #E0E0E0;\n    width: 217px;\n    height: 45px; }\n  .button:active, #make-button:active, #join-button:active, #connect-button:active, #back-button:active {\n    box-shadow: -3px -3px 2px #E0E0E0;\n    width: 212px;\n    height: 40px; }\n\n#landing-screen {\n  position: absolute;\n  background-color: white;\n  width: 500px;\n  height: 300px;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%);\n  border-radius: 5px;\n  box-shadow: -7px -7px 5px rgba(0, 0, 0, 0.4); }\n\n#landing-screen h1 {\n  width: 100%;\n  text-align: center;\n  position: relative;\n  top: 50px; }\n\n#make-button {\n  top: 150px; }\n\n#join-button {\n  top: 200px; }\n\n/* connect controls */\n#connect-controls {\n  opacity: 0;\n  text-align: center;\n  display: none; }\n\ninput[type='text'] {\n  display: block;\n  margin: auto;\n  width: 200px;\n  padding: 4px;\n  font-size: 1em;\n  border-radius: 4px;\n  border: 2px solid #E0E0E0;\n  margin-bottom: 10px;\n  position: relative;\n  top: 85px; }\n\n#connect-button {\n  top: 230px; }\n\n#back-button {\n  background-color: #F44336;\n  top: 280px; }\n\n#board {\n  display: none;\n  height: 100vh;\n  width: 100%;\n  overflow: auto; }\n\n.note {\n  width: 100px;\n  height: 100px;\n  background-color: white;\n  position: absolute;\n  transition: left .1s, top .1s;\n  border-radius: 4px;\n  box-shadow: -4px -4px 2px rgba(0, 0, 0, 0.4); }\n\n.note:hover {\n  opacity: 0.6;\n  cursor: pointer; }\n\n.note:active {\n  opacity: 1;\n  cursor: grab; }\n\n.note p {\n  pointer-events: none; }\n\n/*# sourceMappingURL=app.css.map */\n", ""]);
+exports.push([module.i, "* {\n  margin: 0;\n  padding: 0; }\n\n*:focus {\n  outline: none; }\n\nbody {\n  width: 100%;\n  height: 100vh;\n  background-color: #4ABDAC; }\n\n/*\n  _landing.scss\n  styles for landing screen\n\n  by Aaron Romel\n*/\n.button, #make-button, #join-button, #connect-button, #back-button {\n  display: block;\n  width: 212px;\n  height: 40px;\n  margin: auto;\n  background-color: #FC4A1A;\n  color: white;\n  box-shadow: 0px 3px 2px #E0E0E0;\n  border: none;\n  border-radius: 3px;\n  font-size: 1.1em;\n  position: absolute;\n  left: 50%;\n  transform: translate(-50%, 0);\n  transition: width 0.15s, height 0.15s, box-shadow 0.15s; }\n  .button:hover, #make-button:hover, #join-button:hover, #connect-button:hover, #back-button:hover {\n    cursor: pointer;\n    box-shadow: 4px 7px 7px #E0E0E0, -4px 0px 7px #E0E0E0;\n    width: 217px;\n    height: 45px; }\n  .button:active, #make-button:active, #join-button:active, #connect-button:active, #back-button:active {\n    box-shadow: 0px 3px 2px #E0E0E0;\n    width: 212px;\n    height: 40px; }\n\n#landing-screen {\n  position: absolute;\n  background-color: white;\n  width: 500px;\n  height: 400px;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%);\n  border-radius: 5px;\n  box-shadow: 0px 7px 5px rgba(0, 0, 0, 0.4); }\n\n#landing-screen img {\n  margin: auto;\n  position: absolute;\n  left: 50%;\n  top: 20px;\n  transform: translate(-50%, 0); }\n\n#landing-controls {\n  position: relative;\n  top: 250px; }\n\n#join-button {\n  top: 55px; }\n\n/* connect controls */\n#connect-controls {\n  opacity: 0;\n  display: none;\n  position: relative;\n  top: 250px; }\n\ninput[type='text'] {\n  display: block;\n  margin: auto;\n  width: 200px;\n  padding: 4px;\n  font-size: 1em;\n  border-radius: 4px;\n  border: 2px solid #E0E0E0;\n  position: relative;\n  margin-bottom: 10px; }\n\n#break {\n  width: 212px;\n  height: 2px;\n  margin: auto;\n  background-color: #E0E0E0; }\n\n#connect-button {\n  top: 125px; }\n\n#back-button {\n  background-color: #4ABDAC;\n  top: 180px; }\n\n#board {\n  display: none;\n  height: 100vh;\n  width: 100%;\n  overflow: auto; }\n\n.note {\n  width: 100px;\n  height: 100px;\n  background-color: white;\n  position: absolute;\n  transition: left .1s, top .1s;\n  border-radius: 4px;\n  box-shadow: 0px 4px 2px rgba(0, 0, 0, 0.4); }\n\n.note:hover {\n  opacity: 0.6;\n  cursor: pointer; }\n\n.note:active {\n  opacity: 1;\n  cursor: grab; }\n\n.note p {\n  pointer-events: none; }\n\n/*# sourceMappingURL=app.css.map */\n", ""]);
 
 // exports
 

@@ -24,19 +24,19 @@ const showConnectControls = (type) => {
   }
   TweenMax.to(landingControls, 0.3, { opacity: 0, onComplete: () => {
     landingControls.style.display = 'none';
+    connectControls.style.display = 'block';
+    TweenMax.to(connectControls, 0.3, { opacity: 1, delay: 0.2 });
+    TweenMax.to(landingScreen, 0.5, { height: '600px'});
   }});
-  connectControls.style.display = 'block';
-  TweenMax.to(connectControls, 0.3, { opacity: 1, delay: 0.2 });
-  TweenMax.to(landingScreen, 0.5, { height: '400px'});
 };
 
 const hideConnectControls = () => {
-  TweenMax.to(connectControls, 0.3, { opacity: 0, onComplete: () => {
+  TweenMax.to(connectControls, 0.2, { opacity: 0, onComplete: () => {
     connectControls.style.display = 'none';
+    landingControls.style.display = 'block';
+    TweenMax.to(landingControls, 0.3, { opacity: 1, delay: 0.2 });
+    TweenMax.to(landingScreen, 0.5, { height: '400px'});
   }});
-  landingControls.style.display = 'block';
-  TweenMax.to(landingControls, 0.3, { opacity: 1, delay: 0.2 });
-  TweenMax.to(landingScreen, 0.5, { height: '300px'});
 };
 
 const hideAll = () => {
@@ -46,7 +46,7 @@ const hideAll = () => {
       landingScreen.style.display = 'none';
     }
   });
-  TweenMax.to(document.querySelector('body'), 0.5, { backgroundColor: "#3F51B5" });
+  TweenMax.to(document.querySelector('body'), 0.5, { backgroundColor: "#F7B733" });
 };
 
 const connect = () => {
