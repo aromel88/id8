@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "assets";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 3);
+/******/ 	return __webpack_require__(__webpack_require__.s = 4);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -76,7 +76,7 @@
 __webpack_require__(2);
 
 var ui = __webpack_require__(1);
-var client = __webpack_require__(4);
+var client = __webpack_require__(3);
 
 var NOTE_SIZE = { x: 100, y: 100 };
 
@@ -105,14 +105,27 @@ var mouseUp = function mouseUp(e) {
   currentNote = undefined;
 };
 
+var noteDragged = function noteDragged(dragData) {
+  var noteToDrag = noteElements[dragData.noteID];
+  var noteToUpdate = notes[dragData.noteID];
+  noteToDrag.style.left = dragData.x + 'px';
+  noteToDrag.style.top = dragData.y + 'px';
+  noteToUpdate.x = dragData.x;
+  noteToUpdate.y = dragData.y;
+};
+
 var drag = function drag(e) {
   e.preventDefault();
   e.stopPropagation();
   // only drag notes
   if (!dragging || !currentNote) return;
 
-  currentNote.style.left = e.clientX - currentNote.offsetWidth / 2 + 'px';
-  currentNote.style.top = e.clientY - currentNote.offsetHeight / 2 + 'px';
+  var xDrag = e.clientX - currentNote.offsetWidth / 2;
+  var yDrag = e.clientY - currentNote.offsetHeight / 2;
+  currentNote.style.left = xDrag + 'px';
+  currentNote.style.top = yDrag + 'px';
+
+  client.emit('dragNote', { noteID: currentNote.noteID, x: xDrag, y: yDrag });
 };
 
 var createNote = function createNote(posX, posY, text, noteID) {
@@ -168,6 +181,7 @@ var init = function init() {
 
 module.exports.init = init;
 module.exports.setup = setup;
+module.exports.noteDragged = noteDragged;
 module.exports.notes = notes;
 
 /***/ }),
@@ -177,7 +191,7 @@ module.exports.notes = notes;
 "use strict";
 
 
-var client = __webpack_require__(4);
+var client = __webpack_require__(3);
 var board = __webpack_require__(0);
 
 // DOM elements
@@ -298,27 +312,6 @@ if(false) {
 "use strict";
 
 
-__webpack_require__(2);
-
-var ui = __webpack_require__(1);
-//const client = require('./client');
-//const host = require('./host');
-var board = __webpack_require__(0);
-
-var init = function init() {
-  ui.init();
-  board.init();
-};
-
-window.addEventListener('load', init);
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
 /*
   client.js
   Module to handle socketIO client functionality
@@ -350,6 +343,7 @@ var connect = function connect(connectData) {
   socket = io.connect();
   socket.on('createSuccess', createSuccess);
   socket.on('joinSuccess', joinSuccess);
+  socket.on('noteDragged', board.noteDragged);
 
   // attempt connection with websocket server
   socket.emit('attemptConnect', connectData);
@@ -369,6 +363,27 @@ var disconnect = function disconnect() {
 module.exports.connect = connect;
 module.exports.emit = emit;
 module.exports.disconnect = disconnect;
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+__webpack_require__(2);
+
+var ui = __webpack_require__(1);
+//const client = require('./client');
+//const host = require('./host');
+var board = __webpack_require__(0);
+
+var init = function init() {
+  ui.init();
+  board.init();
+};
+
+window.addEventListener('load', init);
 
 /***/ }),
 /* 5 */

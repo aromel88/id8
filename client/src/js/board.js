@@ -29,14 +29,27 @@ const mouseUp = (e) => {
   currentNote = undefined;
 };
 
+const noteDragged = (dragData) => {
+  const noteToDrag = noteElements[dragData.noteID];
+  const noteToUpdate = notes[dragData.noteID];
+  noteToDrag.style.left = `${dragData.x}px`;
+  noteToDrag.style.top = `${dragData.y}px`;
+  noteToUpdate.x = dragData.x;
+  noteToUpdate.y = dragData.y;
+};
+
 const drag = (e) => {
   e.preventDefault();
   e.stopPropagation();
   // only drag notes
   if (!dragging || !currentNote) return;
 
-  currentNote.style.left = `${e.clientX - currentNote.offsetWidth/2}px`;
-  currentNote.style.top = `${e.clientY - currentNote.offsetHeight/2}px`;
+  const xDrag = e.clientX - currentNote.offsetWidth/2;
+  const yDrag = e.clientY - currentNote.offsetHeight/2;
+  currentNote.style.left = `${xDrag}px`;
+  currentNote.style.top = `${yDrag}px`;
+
+  client.emit('dragNote', { noteID: currentNote.noteID,  x: xDrag, y: yDrag });
 };
 
 const createNote = (posX, posY, text, noteID) => {
@@ -97,4 +110,5 @@ const init = () => {
 
 module.exports.init = init;
 module.exports.setup = setup;
+module.exports.noteDragged = noteDragged;
 module.exports.notes = notes;
