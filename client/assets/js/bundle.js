@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "assets";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 4);
+/******/ 	return __webpack_require__(__webpack_require__.s = 5);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -75,9 +75,9 @@
 
 __webpack_require__(3);
 
-var ui = __webpack_require__(1);
-var client = __webpack_require__(2);
-var note = __webpack_require__(15);
+var ui = __webpack_require__(2);
+var client = __webpack_require__(1);
+var note = __webpack_require__(4);
 
 var NOTE_SIZE = { x: 100, y: 100 };
 
@@ -183,7 +183,73 @@ module.exports.notes = getNotes;
 "use strict";
 
 
-var client = __webpack_require__(2);
+/*
+  client.js
+  Module to handle socketIO client functionality
+
+  by Aaron Romel
+*/
+
+var ui = __webpack_require__(2);
+var board = __webpack_require__(0);
+var host = __webpack_require__(6);
+
+var socket = void 0;
+var roomCode = void 0;
+
+var createSuccess = function createSuccess(data) {
+  roomCode = data.roomCode;
+  host.init();
+  board.setup(data.userName);
+  ui.updateUserList(data.userList);
+  console.log(roomCode);
+};
+
+var joinSuccess = function joinSuccess(data) {
+  roomCode = data.roomCode;
+  board.setup(data.userName);
+  ui.updateUserList(data.userList);
+};
+
+// connect socketio server
+var connect = function connect(connectData) {
+  // connect to socketio server
+  socket = io.connect();
+  socket.on('createSuccess', createSuccess);
+  socket.on('joinSuccess', joinSuccess);
+  socket.on('recieveBoard', board.recieveBoard);
+  socket.on('noteAdded', board.noteAdded);
+  socket.on('noteDragged', board.noteDragged);
+  socket.on('noteUpdate', board.noteUpdated);
+  socket.on('requestBoard', host.requestBoard);
+
+  // attempt connection with websocket server
+  socket.emit('attemptConnect', connectData);
+};
+
+// allow other modules to emit data to server
+var emit = function emit(type, data) {
+  socket.emit(type, data);
+};
+
+// disconnect from socket server
+var disconnect = function disconnect() {
+  socket.disconnect();
+  socket = undefined;
+};
+
+module.exports.connect = connect;
+module.exports.emit = emit;
+module.exports.disconnect = disconnect;
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var client = __webpack_require__(1);
 var board = __webpack_require__(0);
 
 // DOM elements
@@ -277,82 +343,16 @@ module.exports.hideAll = hideAll;
 module.exports.updateUserList = updateUserList;
 
 /***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-/*
-  client.js
-  Module to handle socketIO client functionality
-
-  by Aaron Romel
-*/
-
-var ui = __webpack_require__(1);
-var board = __webpack_require__(0);
-var host = __webpack_require__(5);
-
-var socket = void 0;
-var roomCode = void 0;
-
-var createSuccess = function createSuccess(data) {
-  roomCode = data.roomCode;
-  host.init();
-  board.setup(data.userName);
-  ui.updateUserList(data.userList);
-  console.log(roomCode);
-};
-
-var joinSuccess = function joinSuccess(data) {
-  roomCode = data.roomCode;
-  board.setup(data.userName);
-  ui.updateUserList(data.userList);
-};
-
-// connect socketio server
-var connect = function connect(connectData) {
-  // connect to socketio server
-  socket = io.connect();
-  socket.on('createSuccess', createSuccess);
-  socket.on('joinSuccess', joinSuccess);
-  socket.on('recieveBoard', board.recieveBoard);
-  socket.on('noteAdded', board.noteAdded);
-  socket.on('noteDragged', board.noteDragged);
-  socket.on('noteUpdate', board.noteUpdated);
-  socket.on('requestBoard', host.requestBoard);
-
-  // attempt connection with websocket server
-  socket.emit('attemptConnect', connectData);
-};
-
-// allow other modules to emit data to server
-var emit = function emit(type, data) {
-  socket.emit(type, data);
-};
-
-// disconnect from socket server
-var disconnect = function disconnect() {
-  socket.disconnect();
-  socket = undefined;
-};
-
-module.exports.connect = connect;
-module.exports.emit = emit;
-module.exports.disconnect = disconnect;
-
-/***/ }),
 /* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(8);
+var content = __webpack_require__(9);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // add the styles to the DOM
-var update = __webpack_require__(12)(content, {});
+var update = __webpack_require__(13)(content, {});
 if(content.locals) module.exports = content.locals;
 // Hot Module Replacement
 if(false) {
@@ -375,9 +375,153 @@ if(false) {
 "use strict";
 
 
+var client = __webpack_require__(1);
+var board = __webpack_require__(0);
+
+var noStick = false;
+var typing = false;
+var dragging = false;
+var currentNote = void 0;
+
+var stickNote = function stickNote() {
+  var text = currentNote.childNodes[0];
+  var textBox = currentNote.childNodes[1];
+  var textValue = textBox.value;
+  text.innerHTML = textValue;
+  textBox.style.display = 'none';
+  text.style.display = 'block';
+  typing = false;
+  board.notes()[currentNote.noteID].text = textValue;
+  client.emit('updateNoteText', {
+    noteID: currentNote.noteID,
+    text: textValue
+  });
+};
+
+var setNoteHeight = function setNoteHeight(e) {
+  //console.dir(e.target);
+};
+
+var mouseDown = function mouseDown(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  if (typing) {
+    stickNote();
+  }
+  if (e.target.classList.contains('note')) {
+    currentNote = e.target;
+    dragging = true;
+    // TweenMax.to(currentNote, 0, {
+    //   left: e.clientX - currentNote.offsetWidth/2,
+    //   top: e.clientY - currentNote.offsetHeight/2
+    // });
+  }
+};
+
+var drag = function drag(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  // only drag notes
+  if (!dragging || !currentNote) return;
+
+  var xDrag = e.clientX - currentNote.offsetWidth / 2;
+  var yDrag = e.clientY - currentNote.offsetHeight / 2;
+  currentNote.style.left = xDrag + 'px';
+  currentNote.style.top = yDrag + 'px';
+  board.updateNote(xDrag, yDrag, currentNote.noteID);
+  client.emit('dragNote', { noteID: currentNote.noteID, x: xDrag, y: yDrag });
+};
+
+var mouseUp = function mouseUp(e) {
+  dragging = false;
+  currentNote = undefined;
+};
+
+var editNote = function editNote(e) {
+  currentNote = e.target;
+  var text = currentNote.childNodes[0];
+  var textBox = currentNote.childNodes[1];
+  var textValue = text.innerHTML;
+  textBox.value = textValue;
+  text.style.display = 'none';
+  textBox.style.display = 'block';
+  typing = true;
+  dragging = false;
+  textBox.focus();
+};
+
+var setupTextBox = function setupTextBox() {
+  var noteTextBox = document.createElement('textarea');
+  noteTextBox.addEventListener('input', setNoteHeight);
+  noteTextBox.addEventListener('keyup', function (e) {
+    if (e.keyCode === 16) {
+      noStick = false;
+    }
+  });
+  noteTextBox.addEventListener('keydown', function (e) {
+    if (e.keyCode === 16) {
+      noStick = true;
+    } else if (e.keyCode === 13 && !noStick) {
+      console.log('stick');
+      stickNote();
+    }
+  });
+  noteTextBox.rows = 4;
+  noteTextBox.cols = 9;
+
+  return noteTextBox;
+};
+
+var Note = function Note(posX, posY, text, noteID, creatingNew) {
+  var newNote = document.createElement('div');
+  newNote.noteID = noteID;
+  newNote.classList.add('note');
+  newNote.style.left = posX + 'px';
+  newNote.style.top = posY + 'px';
+  newNote.addEventListener('dblclick', editNote);
+
+  var noteText = document.createElement('p');
+  var noteTextBox = setupTextBox();
+  newNote.appendChild(noteText);
+  newNote.appendChild(noteTextBox);
+  board.board().appendChild(newNote);
+  if (creatingNew) {
+    noteText.style.display = 'none';
+    typing = true;
+    noteTextBox.focus();
+  } else {
+    noteTextBox.style.display = 'none';
+    noteText.innerHTML = text;
+  }
+  currentNote = newNote;
+
+  return newNote;
+};
+
+var setCurrentNote = function setCurrentNote(note) {
+  currentNote = note;
+};
+var getCurrentNote = function getCurrentNote() {
+  return currentNote;
+};
+
+module.exports.Note = Note;
+module.exports.mouseDown = mouseDown;
+module.exports.drag = drag;
+module.exports.mouseUp = mouseUp;
+module.exports.setCurrentNote = setCurrentNote;
+module.exports.currentNote = getCurrentNote;
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 __webpack_require__(3);
 
-var ui = __webpack_require__(1);
+var ui = __webpack_require__(2);
 //const client = require('./client');
 //const host = require('./host');
 var board = __webpack_require__(0);
@@ -390,14 +534,14 @@ var init = function init() {
 window.addEventListener('load', init);
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 var board = __webpack_require__(0);
-var client = __webpack_require__(2);
+var client = __webpack_require__(1);
 
 var requestBoard = function requestBoard(data) {
   client.emit('sendBoard', { toUser: data.userRequesting, notes: board.notes() });
@@ -409,7 +553,7 @@ module.exports.init = init;
 module.exports.requestBoard = requestBoard;
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -530,7 +674,7 @@ function fromByteArray (uint8) {
 
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -544,9 +688,9 @@ function fromByteArray (uint8) {
 
 
 
-var base64 = __webpack_require__(6)
-var ieee754 = __webpack_require__(10)
-var isArray = __webpack_require__(11)
+var base64 = __webpack_require__(7)
+var ieee754 = __webpack_require__(11)
+var isArray = __webpack_require__(12)
 
 exports.Buffer = Buffer
 exports.SlowBuffer = SlowBuffer
@@ -2324,13 +2468,13 @@ function isnan (val) {
   return val !== val // eslint-disable-line no-self-compare
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(14)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(15)))
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(9)(undefined);
+exports = module.exports = __webpack_require__(10)(undefined);
 // imports
 
 
@@ -2341,7 +2485,7 @@ exports.push([module.i, "* {\n  margin: 0;\n  padding: 0; }\n\n*:focus {\n  outl
 
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(Buffer) {/*
@@ -2420,10 +2564,10 @@ function toComment(sourceMap) {
   return '/*# ' + data + ' */';
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(7).Buffer))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8).Buffer))
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports) {
 
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
@@ -2513,7 +2657,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports) {
 
 var toString = {}.toString;
@@ -2524,7 +2668,7 @@ module.exports = Array.isArray || function (arr) {
 
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*
@@ -2561,7 +2705,7 @@ var stylesInDom = {},
 	singletonElement = null,
 	singletonCounter = 0,
 	styleElementsInsertedAtTop = [],
-	fixUrls = __webpack_require__(13);
+	fixUrls = __webpack_require__(14);
 
 module.exports = function(list, options) {
 	if(typeof DEBUG !== "undefined" && DEBUG) {
@@ -2820,7 +2964,7 @@ function updateLink(linkElement, options, obj) {
 
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports) {
 
 
@@ -2915,7 +3059,7 @@ module.exports = function (css) {
 
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports) {
 
 var g;
@@ -2940,150 +3084,6 @@ try {
 
 module.exports = g;
 
-
-/***/ }),
-/* 15 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var client = __webpack_require__(2);
-var board = __webpack_require__(0);
-
-var noStick = false;
-var typing = false;
-var dragging = false;
-var currentNote = void 0;
-
-var stickNote = function stickNote() {
-  var text = currentNote.childNodes[0];
-  var textBox = currentNote.childNodes[1];
-  var textValue = textBox.value;
-  text.innerHTML = textValue;
-  textBox.style.display = 'none';
-  text.style.display = 'block';
-  typing = false;
-  board.notes()[currentNote.noteID].text = textValue;
-  client.emit('updateNoteText', {
-    noteID: currentNote.noteID,
-    text: textValue
-  });
-};
-
-var setNoteHeight = function setNoteHeight(e) {
-  //console.dir(e.target);
-};
-
-var mouseDown = function mouseDown(e) {
-  e.preventDefault();
-  e.stopPropagation();
-  if (typing) {
-    stickNote();
-  }
-  if (e.target.classList.contains('note')) {
-    currentNote = e.target;
-    dragging = true;
-    // TweenMax.to(currentNote, 0, {
-    //   left: e.clientX - currentNote.offsetWidth/2,
-    //   top: e.clientY - currentNote.offsetHeight/2
-    // });
-  }
-};
-
-var drag = function drag(e) {
-  e.preventDefault();
-  e.stopPropagation();
-  // only drag notes
-  if (!dragging || !currentNote) return;
-
-  var xDrag = e.clientX - currentNote.offsetWidth / 2;
-  var yDrag = e.clientY - currentNote.offsetHeight / 2;
-  currentNote.style.left = xDrag + 'px';
-  currentNote.style.top = yDrag + 'px';
-  board.updateNote(xDrag, yDrag, currentNote.noteID);
-  client.emit('dragNote', { noteID: currentNote.noteID, x: xDrag, y: yDrag });
-};
-
-var mouseUp = function mouseUp(e) {
-  dragging = false;
-  currentNote = undefined;
-};
-
-var editNote = function editNote(e) {
-  currentNote = e.target;
-  var text = currentNote.childNodes[0];
-  var textBox = currentNote.childNodes[1];
-  var textValue = text.innerHTML;
-  textBox.value = textValue;
-  text.style.display = 'none';
-  textBox.style.display = 'block';
-  typing = true;
-  dragging = false;
-  textBox.focus();
-};
-
-var setupTextBox = function setupTextBox() {
-  var noteTextBox = document.createElement('textarea');
-  noteTextBox.addEventListener('input', setNoteHeight);
-  noteTextBox.addEventListener('keyup', function (e) {
-    if (e.keyCode === 16) {
-      noStick = false;
-    }
-  });
-  noteTextBox.addEventListener('keydown', function (e) {
-    if (e.keyCode === 16) {
-      noStick = true;
-    } else if (e.keyCode === 13 && !noStick) {
-      console.log('stick');
-      stickNote();
-    }
-  });
-  noteTextBox.rows = 4;
-  noteTextBox.cols = 9;
-
-  return noteTextBox;
-};
-
-var Note = function Note(posX, posY, text, noteID, creatingNew) {
-  var newNote = document.createElement('div');
-  newNote.noteID = noteID;
-  newNote.classList.add('note');
-  newNote.style.left = posX + 'px';
-  newNote.style.top = posY + 'px';
-  newNote.addEventListener('dblclick', editNote);
-
-  var noteText = document.createElement('p');
-  var noteTextBox = setupTextBox();
-  newNote.appendChild(noteText);
-  newNote.appendChild(noteTextBox);
-  board.board().appendChild(newNote);
-  if (creatingNew) {
-    noteText.style.display = 'none';
-    typing = true;
-    noteTextBox.focus();
-  } else {
-    noteTextBox.style.display = 'none';
-    noteText.innerHTML = text;
-  }
-  currentNote = newNote;
-
-  return newNote;
-};
-
-var setCurrentNote = function setCurrentNote(note) {
-  currentNote = note;
-};
-var getCurrentNote = function getCurrentNote() {
-  return currentNote;
-};
-
-module.exports.Note = Note;
-module.exports.mouseDown = mouseDown;
-module.exports.drag = drag;
-module.exports.mouseUp = mouseUp;
-module.exports.setCurrentNote = setCurrentNote;
-module.exports.currentNote = getCurrentNote;
 
 /***/ })
 /******/ ]);
