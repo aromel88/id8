@@ -32,7 +32,7 @@ const attemptCreate = (sock, data) => {
   socket.roomCode = roomCode;
   socket.join(roomCode);
   server.rooms[roomCode] = {
-    roomCode: roomCode,
+    roomCode,
     admin: socket,
     users: {},
     userList: [],
@@ -40,11 +40,11 @@ const attemptCreate = (sock, data) => {
   server.rooms[roomCode].users[socket.name] = socket;
   server.rooms[roomCode].userList.push(socket.name);
   socket.emit('createSuccess',
-  {
-    userName: socket.name,
-    roomCode: roomCode,
-    userList: [socket.name],
-  });
+    {
+      userName: socket.name,
+      roomCode,
+      userList: [socket.name],
+    });
 };
 
 const attemptConnect = (sock, data) => {
