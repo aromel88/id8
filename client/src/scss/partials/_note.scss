@@ -21,11 +21,12 @@
 
 .note textarea {
   border: none;
-  margin: auto;
   resize: none;
   position: relative;
   top: 5px;
   left: 5px;
+  font-family: $Roboto;
+  font-size: 1em;
 }
 
 .note p {
@@ -35,5 +36,5 @@
   left: 5px;
   width: 90px;
   height: 90px;
-  word-break: break-all;
+  word-wrap: normal;
 }

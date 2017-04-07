@@ -23,7 +23,7 @@ const stickNote = () => {
 };
 
 const setNoteHeight = (e) => {
-  console.dir(e.target);
+  //console.dir(e.target);
 };
 
 
@@ -36,10 +36,10 @@ const mouseDown = (e) => {
   if (e.target.classList.contains('note')) {
     currentNote = e.target;
     dragging = true;
-    TweenMax.to(currentNote, 0, {
-      left: e.clientX - currentNote.offsetWidth/2,
-      top: e.clientY - currentNote.offsetHeight/2
-    });
+    // TweenMax.to(currentNote, 0, {
+    //   left: e.clientX - currentNote.offsetWidth/2,
+    //   top: e.clientY - currentNote.offsetHeight/2
+    // });
   }
 };
 
@@ -78,20 +78,21 @@ const editNote = (e) => {
 const setupTextBox = () => {
   const noteTextBox = document.createElement('textarea');
   noteTextBox.addEventListener('input', setNoteHeight);
-  noteTextBox.addEventListener('keydown', (e) => {
-    if (e.keyCode === 16) {
-      noStick = true;
-    }
-  });
   noteTextBox.addEventListener('keyup', (e) => {
     if (e.keyCode === 16) {
       noStick = false;
+    }
+  });
+  noteTextBox.addEventListener('keydown', (e) => {
+    if (e.keyCode === 16) {
+      noStick = true;
     } else if (e.keyCode === 13 && !noStick) {
+      console.log('stick');
       stickNote();
     }
   });
-  noteTextBox.rows = 7;
-  noteTextBox.cols = 12;
+  noteTextBox.rows = 4;
+  noteTextBox.cols = 9;
 
   return noteTextBox;
 };
