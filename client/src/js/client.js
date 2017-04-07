@@ -35,6 +35,7 @@ const connect = (connectData) => {
   socket.on('recieveBoard', board.recieveBoard);
   socket.on('noteAdded', board.noteAdded);
   socket.on('noteDragged', board.noteDragged);
+  socket.on('noteUpdate', board.noteUpdated);
   socket.on('requestBoard', host.requestBoard);
 
   // attempt connection with websocket server

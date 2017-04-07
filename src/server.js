@@ -25,6 +25,7 @@ const onMsg = (sock) => {
   socket.on('addNote', (data) => { board.addNote(socket, data); });
   socket.on('dragNote', (data) => { board.dragNote(socket, data); });
   socket.on('sendBoard', (data) => { board.recieveBoard(socket, data); });
+  socket.on('updateNoteText', (data) => { board.updateNoteText(socket, data); });
 };
 
 const onDisconnect = (sock) => {

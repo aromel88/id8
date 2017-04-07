@@ -8,25 +8,48 @@ let name;
 let board;
 let notes;
 let noteElements;
+let typing = false;
 let dragging = false;
 let currentNote;
 
 const mouseDown = (e) => {
   e.preventDefault();
   e.stopPropagation();
+  if (typing) {
+    const text = currentNote.childNodes[0];
+    const textBox = currentNote.childNodes[1];
+    const textValue = textBox.value;
+    text.innerHTML = textValue;
+    textBox.style.display = 'none';
+    text.style.display = 'block';
+    typing = false;
+    notes[currentNote.noteID].text = textValue;
+    client.emit('updateNoteText', {
+      noteID: currentNote.noteID,
+      text: textValue,
+    })
+  }
   // only drag notes, please
-  if (!e.target.classList.contains('note')) return;
-  currentNote = e.target;
-  dragging = true;
-  TweenMax.to(currentNote, 0, {
-    left: e.clientX - currentNote.offsetWidth/2,
-    top: e.clientY - currentNote.offsetHeight/2
-  });
+  if (e.target.classList.contains('note')) {
+    currentNote = e.target;
+    dragging = true;
+    TweenMax.to(currentNote, 0, {
+      left: e.clientX - currentNote.offsetWidth/2,
+      top: e.clientY - currentNote.offsetHeight/2
+    });
+  }
 };
 
 const mouseUp = (e) => {
   dragging = false;
   currentNote = undefined;
+};
+
+const noteUpdated = (noteData) => {
+  const noteToUpdate = notes[noteData.noteID];
+  const noteElement = noteElements[noteData.noteID];
+  noteToUpdate.text = noteData.text;
+  noteElement.childNodes[0].innerHTML = noteData.text;
 };
 
 const noteDragged = (dragData) => {
@@ -52,16 +75,29 @@ const drag = (e) => {
   client.emit('dragNote', { noteID: currentNote.noteID,  x: xDrag, y: yDrag });
 };
 
-const createNote = (posX, posY, text, noteID) => {
+const createNote = (posX, posY, text, noteID, creatingNew) => {
   const newNote = document.createElement('div');
   newNote.noteID = noteID;
   newNote.classList.add('note');
   newNote.style.left = `${posX}px`;
   newNote.style.top = `${posY}px`;
   const noteText = document.createElement('p');
+  const noteTextBox = document.createElement('textarea');
+  noteTextBox.rows = 7;
+  noteTextBox.cols = 12;
   newNote.appendChild(noteText);
+  newNote.appendChild(noteTextBox);
   board.appendChild(newNote);
+  if (creatingNew) {
+    noteText.style.display = 'none';
+    typing = true;
+    noteTextBox.focus();
+  } else {
+    noteTextBox.style.display = 'none';
+    noteText.innerHTML = text;
+  }
   noteElements[noteID] = newNote;
+  currentNote = newNote;
 };
 
 const recieveBoard = (noteData) => {
@@ -71,7 +107,8 @@ const recieveBoard = (noteData) => {
       noteData[key].x,
       noteData[key].y,
       noteData[key].text,
-      noteData[key].noteID
+      noteData[key].noteID,
+      false
     );
   });
 };
@@ -84,7 +121,7 @@ const setup = (data) => {
 
 const noteAdded = (data) => {
   notes[data.noteID] = data;
-  createNote(data.x, data.y, data.text, data.noteID);
+  createNote(data.x, data.y, data.text, data.noteID, false);
 };
 
 const addNote = (e) => {
@@ -98,7 +135,7 @@ const addNote = (e) => {
     text: '',
     noteID: noteID,
   };
-  createNote(posX, posY, '', noteID);
+  createNote(posX, posY, '', noteID, true);
   client.emit('addNote', notes[noteID]);
 };
 
@@ -119,4 +156,5 @@ module.exports.setup = setup;
 module.exports.recieveBoard = recieveBoard;
 module.exports.noteAdded = noteAdded;
 module.exports.noteDragged = noteDragged;
+module.exports.noteUpdated = noteUpdated;
 module.exports.notes = getNotes;

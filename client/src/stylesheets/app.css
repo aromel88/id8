@@ -8,7 +8,8 @@
 body {
   width: 100%;
   height: 100vh;
-  background-color: #4ABDAC; }
+  background-color: #4ABDAC;
+  font-family: 'Roboto', sans-serif; }
 
 /*
   _landing.scss
@@ -120,7 +121,20 @@ input[type='text'] {
   opacity: 1;
   cursor: grab; }
 
+.note textarea {
+  border: none;
+  margin: auto;
+  resize: none;
+  position: relative;
+  top: 5px;
+  left: 5px; }
+
 .note p {
-  pointer-events: none; }
+  pointer-events: none;
+  position: relative;
+  top: 5px;
+  left: 5px;
+  width: 90px;
+  height: 90px; }
 
 /*# sourceMappingURL=app.css.map */

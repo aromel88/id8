@@ -19,6 +19,20 @@
   cursor: grab;
 }
 
+.note textarea {
+  border: none;
+  margin: auto;
+  resize: none;
+  position: relative;
+  top: 5px;
+  left: 5px;
+}
+
 .note p {
   pointer-events: none;
+  position: relative;
+  top: 5px;
+  left: 5px;
+  width: 90px;
+  height: 90px;
 }
