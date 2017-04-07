@@ -1,11 +1,11 @@
 .note {
   width: 100px;
-  height: 100px;
+  height: auto;
+  min-height: 100px;
   background-color: white;
   position: absolute;
   transition: left .1s, top .1s;
   border-radius: 4px;
-
   box-shadow: 0px 4px 2px rgba(0,0,0,0.4);
 }
 
@@ -35,4 +35,5 @@
   left: 5px;
   width: 90px;
   height: 90px;
+  word-break: break-all;
 }

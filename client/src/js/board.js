@@ -10,24 +10,29 @@ let notes;
 let noteElements;
 let typing = false;
 let dragging = false;
+let noStick = false;
 let currentNote;
+
+const stickNote = () => {
+  const text = currentNote.childNodes[0];
+  const textBox = currentNote.childNodes[1];
+  const textValue = textBox.value;
+  text.innerHTML = textValue;
+  textBox.style.display = 'none';
+  text.style.display = 'block';
+  typing = false;
+  notes[currentNote.noteID].text = textValue;
+  client.emit('updateNoteText', {
+    noteID: currentNote.noteID,
+    text: textValue,
+  });
+};
 
 const mouseDown = (e) => {
   e.preventDefault();
   e.stopPropagation();
   if (typing) {
-    const text = currentNote.childNodes[0];
-    const textBox = currentNote.childNodes[1];
-    const textValue = textBox.value;
-    text.innerHTML = textValue;
-    textBox.style.display = 'none';
-    text.style.display = 'block';
-    typing = false;
-    notes[currentNote.noteID].text = textValue;
-    client.emit('updateNoteText', {
-      noteID: currentNote.noteID,
-      text: textValue,
-    })
+    stickNote();
   }
   // only drag notes, please
   if (e.target.classList.contains('note')) {
@@ -75,6 +80,11 @@ const drag = (e) => {
   client.emit('dragNote', { noteID: currentNote.noteID,  x: xDrag, y: yDrag });
 };
 
+const setNoteHeight = (e) => {
+  console.dir(e.target);
+
+};
+
 const createNote = (posX, posY, text, noteID, creatingNew) => {
   const newNote = document.createElement('div');
   newNote.noteID = noteID;
@@ -83,6 +93,19 @@ const createNote = (posX, posY, text, noteID, creatingNew) => {
   newNote.style.top = `${posY}px`;
   const noteText = document.createElement('p');
   const noteTextBox = document.createElement('textarea');
+  noteTextBox.addEventListener('input', setNoteHeight);
+  noteTextBox.addEventListener('keydown', (e) => {
+    if (e.keyCode === 16) {
+      noStick = true;
+    }
+  });
+  noteTextBox.addEventListener('keyup', (e) => {
+    if (e.keyCode === 16) {
+      noStick = false;
+    } else if (e.keyCode === 13 && !noStick) {
+      stickNote();
+    }
+  });
   noteTextBox.rows = 7;
   noteTextBox.cols = 12;
   newNote.appendChild(noteText);

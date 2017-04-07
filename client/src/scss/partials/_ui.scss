@@ -99,13 +99,6 @@ input[type='text'] {
   margin-bottom: 10px;
 }
 
-#break {
-  width: 212px;
-  height: 2px;
-  margin: auto;
-  background-color: $dark-gray;
-}
-
 #connect-button {
   @extend .button;
   top: 125px;
