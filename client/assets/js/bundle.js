@@ -77,6 +77,7 @@ __webpack_require__(3);
 
 var ui = __webpack_require__(1);
 var client = __webpack_require__(2);
+var note = __webpack_require__(15);
 
 var NOTE_SIZE = { x: 100, y: 100 };
 
@@ -84,47 +85,6 @@ var name = void 0;
 var board = void 0;
 var notes = void 0;
 var noteElements = void 0;
-var typing = false;
-var dragging = false;
-var noStick = false;
-var currentNote = void 0;
-
-var stickNote = function stickNote() {
-  var text = currentNote.childNodes[0];
-  var textBox = currentNote.childNodes[1];
-  var textValue = textBox.value;
-  text.innerHTML = textValue;
-  textBox.style.display = 'none';
-  text.style.display = 'block';
-  typing = false;
-  notes[currentNote.noteID].text = textValue;
-  client.emit('updateNoteText', {
-    noteID: currentNote.noteID,
-    text: textValue
-  });
-};
-
-var mouseDown = function mouseDown(e) {
-  e.preventDefault();
-  e.stopPropagation();
-  if (typing) {
-    stickNote();
-  }
-  // only drag notes, please
-  if (e.target.classList.contains('note')) {
-    currentNote = e.target;
-    dragging = true;
-    TweenMax.to(currentNote, 0, {
-      left: e.clientX - currentNote.offsetWidth / 2,
-      top: e.clientY - currentNote.offsetHeight / 2
-    });
-  }
-};
-
-var mouseUp = function mouseUp(e) {
-  dragging = false;
-  currentNote = undefined;
-};
 
 var noteUpdated = function noteUpdated(noteData) {
   var noteToUpdate = notes[noteData.noteID];
@@ -142,60 +102,9 @@ var noteDragged = function noteDragged(dragData) {
   noteToUpdate.y = dragData.y;
 };
 
-var drag = function drag(e) {
-  e.preventDefault();
-  e.stopPropagation();
-  // only drag notes
-  if (!dragging || !currentNote) return;
-
-  var xDrag = e.clientX - currentNote.offsetWidth / 2;
-  var yDrag = e.clientY - currentNote.offsetHeight / 2;
-  currentNote.style.left = xDrag + 'px';
-  currentNote.style.top = yDrag + 'px';
-
-  client.emit('dragNote', { noteID: currentNote.noteID, x: xDrag, y: yDrag });
-};
-
-var setNoteHeight = function setNoteHeight(e) {
-  console.dir(e.target);
-};
-
 var createNote = function createNote(posX, posY, text, noteID, creatingNew) {
-  var newNote = document.createElement('div');
-  newNote.noteID = noteID;
-  newNote.classList.add('note');
-  newNote.style.left = posX + 'px';
-  newNote.style.top = posY + 'px';
-  var noteText = document.createElement('p');
-  var noteTextBox = document.createElement('textarea');
-  noteTextBox.addEventListener('input', setNoteHeight);
-  noteTextBox.addEventListener('keydown', function (e) {
-    if (e.keyCode === 16) {
-      noStick = true;
-    }
-  });
-  noteTextBox.addEventListener('keyup', function (e) {
-    if (e.keyCode === 16) {
-      noStick = false;
-    } else if (e.keyCode === 13 && !noStick) {
-      stickNote();
-    }
-  });
-  noteTextBox.rows = 7;
-  noteTextBox.cols = 12;
-  newNote.appendChild(noteText);
-  newNote.appendChild(noteTextBox);
-  board.appendChild(newNote);
-  if (creatingNew) {
-    noteText.style.display = 'none';
-    typing = true;
-    noteTextBox.focus();
-  } else {
-    noteTextBox.style.display = 'none';
-    noteText.innerHTML = text;
-  }
+  var newNote = note.Note(posX, posY, text, noteID, creatingNew);
   noteElements[noteID] = newNote;
-  currentNote = newNote;
 };
 
 var recieveBoard = function recieveBoard(noteData) {
@@ -217,6 +126,10 @@ var noteAdded = function noteAdded(data) {
 };
 
 var addNote = function addNote(e) {
+  if (e.target.classList.contains('note')) {
+    return;
+  }
+
   var posX = e.clientX - NOTE_SIZE.x / 2;
   var posY = e.clientY - NOTE_SIZE.y / 2;
 
@@ -231,11 +144,16 @@ var addNote = function addNote(e) {
   client.emit('addNote', notes[noteID]);
 };
 
+var updateNote = function updateNote(x, y, noteID) {
+  notes[noteID].x = x;
+  notes[noteID].y = y;
+};
+
 var init = function init() {
   board = document.querySelector('#board');
-  board.addEventListener('mousedown', mouseDown);
-  board.addEventListener('mousemove', drag);
-  board.addEventListener('mouseup', mouseUp);
+  board.addEventListener('mousedown', note.mouseDown);
+  board.addEventListener('mousemove', note.drag);
+  board.addEventListener('mouseup', note.mouseUp);
   board.addEventListener('dblclick', addNote);
   notes = {};
   noteElements = {};
@@ -244,11 +162,16 @@ var init = function init() {
 var getNotes = function getNotes() {
   return notes;
 };
+var getBoard = function getBoard() {
+  return board;
+};
 
 module.exports.init = init;
 module.exports.setup = setup;
+module.exports.board = getBoard;
 module.exports.recieveBoard = recieveBoard;
 module.exports.noteAdded = noteAdded;
+module.exports.updateNote = updateNote;
 module.exports.noteDragged = noteDragged;
 module.exports.noteUpdated = noteUpdated;
 module.exports.notes = getNotes;
@@ -3017,6 +2940,149 @@ try {
 
 module.exports = g;
 
+
+/***/ }),
+/* 15 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var client = __webpack_require__(2);
+var board = __webpack_require__(0);
+
+var noStick = false;
+var typing = false;
+var dragging = false;
+var currentNote = void 0;
+
+var stickNote = function stickNote() {
+  var text = currentNote.childNodes[0];
+  var textBox = currentNote.childNodes[1];
+  var textValue = textBox.value;
+  text.innerHTML = textValue;
+  textBox.style.display = 'none';
+  text.style.display = 'block';
+  typing = false;
+  board.notes()[currentNote.noteID].text = textValue;
+  client.emit('updateNoteText', {
+    noteID: currentNote.noteID,
+    text: textValue
+  });
+};
+
+var setNoteHeight = function setNoteHeight(e) {
+  console.dir(e.target);
+};
+
+var mouseDown = function mouseDown(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  if (typing) {
+    stickNote();
+  }
+  if (e.target.classList.contains('note')) {
+    currentNote = e.target;
+    dragging = true;
+    TweenMax.to(currentNote, 0, {
+      left: e.clientX - currentNote.offsetWidth / 2,
+      top: e.clientY - currentNote.offsetHeight / 2
+    });
+  }
+};
+
+var drag = function drag(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  // only drag notes
+  if (!dragging || !currentNote) return;
+
+  var xDrag = e.clientX - currentNote.offsetWidth / 2;
+  var yDrag = e.clientY - currentNote.offsetHeight / 2;
+  currentNote.style.left = xDrag + 'px';
+  currentNote.style.top = yDrag + 'px';
+  board.updateNote(xDrag, yDrag, currentNote.noteID);
+  client.emit('dragNote', { noteID: currentNote.noteID, x: xDrag, y: yDrag });
+};
+
+var mouseUp = function mouseUp(e) {
+  dragging = false;
+  currentNote = undefined;
+};
+
+var editNote = function editNote(e) {
+  currentNote = e.target;
+  var text = currentNote.childNodes[0];
+  var textBox = currentNote.childNodes[1];
+  var textValue = text.innerHTML;
+  textBox.value = textValue;
+  text.style.display = 'none';
+  textBox.style.display = 'block';
+  typing = true;
+  dragging = false;
+  textBox.focus();
+};
+
+var setupTextBox = function setupTextBox() {
+  var noteTextBox = document.createElement('textarea');
+  noteTextBox.addEventListener('input', setNoteHeight);
+  noteTextBox.addEventListener('keydown', function (e) {
+    if (e.keyCode === 16) {
+      noStick = true;
+    }
+  });
+  noteTextBox.addEventListener('keyup', function (e) {
+    if (e.keyCode === 16) {
+      noStick = false;
+    } else if (e.keyCode === 13 && !noStick) {
+      stickNote();
+    }
+  });
+  noteTextBox.rows = 7;
+  noteTextBox.cols = 12;
+
+  return noteTextBox;
+};
+
+var Note = function Note(posX, posY, text, noteID, creatingNew) {
+  var newNote = document.createElement('div');
+  newNote.noteID = noteID;
+  newNote.classList.add('note');
+  newNote.style.left = posX + 'px';
+  newNote.style.top = posY + 'px';
+  newNote.addEventListener('dblclick', editNote);
+
+  var noteText = document.createElement('p');
+  var noteTextBox = setupTextBox();
+  newNote.appendChild(noteText);
+  newNote.appendChild(noteTextBox);
+  board.board().appendChild(newNote);
+  if (creatingNew) {
+    noteText.style.display = 'none';
+    typing = true;
+    noteTextBox.focus();
+  } else {
+    noteTextBox.style.display = 'none';
+    noteText.innerHTML = text;
+  }
+  currentNote = newNote;
+
+  return newNote;
+};
+
+var setCurrentNote = function setCurrentNote(note) {
+  currentNote = note;
+};
+var getCurrentNote = function getCurrentNote() {
+  return currentNote;
+};
+
+module.exports.Note = Note;
+module.exports.mouseDown = mouseDown;
+module.exports.drag = drag;
+module.exports.mouseUp = mouseUp;
+module.exports.setCurrentNote = setCurrentNote;
+module.exports.currentNote = getCurrentNote;
 
 /***/ })
 /******/ ]);

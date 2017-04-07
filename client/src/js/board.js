@@ -1,6 +1,7 @@
 import '../stylesheets/app.css';
 const ui = require('./ui');
 const client = require('./client');
+const note = require('./Note');
 
 const NOTE_SIZE = { x: 100, y: 100 };
 
@@ -8,47 +9,6 @@ let name;
 let board;
 let notes;
 let noteElements;
-let typing = false;
-let dragging = false;
-let noStick = false;
-let currentNote;
-
-const stickNote = () => {
-  const text = currentNote.childNodes[0];
-  const textBox = currentNote.childNodes[1];
-  const textValue = textBox.value;
-  text.innerHTML = textValue;
-  textBox.style.display = 'none';
-  text.style.display = 'block';
-  typing = false;
-  notes[currentNote.noteID].text = textValue;
-  client.emit('updateNoteText', {
-    noteID: currentNote.noteID,
-    text: textValue,
-  });
-};
-
-const mouseDown = (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  if (typing) {
-    stickNote();
-  }
-  // only drag notes, please
-  if (e.target.classList.contains('note')) {
-    currentNote = e.target;
-    dragging = true;
-    TweenMax.to(currentNote, 0, {
-      left: e.clientX - currentNote.offsetWidth/2,
-      top: e.clientY - currentNote.offsetHeight/2
-    });
-  }
-};
-
-const mouseUp = (e) => {
-  dragging = false;
-  currentNote = undefined;
-};
 
 const noteUpdated = (noteData) => {
   const noteToUpdate = notes[noteData.noteID];
@@ -66,61 +26,9 @@ const noteDragged = (dragData) => {
   noteToUpdate.y = dragData.y;
 };
 
-const drag = (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  // only drag notes
-  if (!dragging || !currentNote) return;
-
-  const xDrag = e.clientX - currentNote.offsetWidth/2;
-  const yDrag = e.clientY - currentNote.offsetHeight/2;
-  currentNote.style.left = `${xDrag}px`;
-  currentNote.style.top = `${yDrag}px`;
-
-  client.emit('dragNote', { noteID: currentNote.noteID,  x: xDrag, y: yDrag });
-};
-
-const setNoteHeight = (e) => {
-  console.dir(e.target);
-
-};
-
 const createNote = (posX, posY, text, noteID, creatingNew) => {
-  const newNote = document.createElement('div');
-  newNote.noteID = noteID;
-  newNote.classList.add('note');
-  newNote.style.left = `${posX}px`;
-  newNote.style.top = `${posY}px`;
-  const noteText = document.createElement('p');
-  const noteTextBox = document.createElement('textarea');
-  noteTextBox.addEventListener('input', setNoteHeight);
-  noteTextBox.addEventListener('keydown', (e) => {
-    if (e.keyCode === 16) {
-      noStick = true;
-    }
-  });
-  noteTextBox.addEventListener('keyup', (e) => {
-    if (e.keyCode === 16) {
-      noStick = false;
-    } else if (e.keyCode === 13 && !noStick) {
-      stickNote();
-    }
-  });
-  noteTextBox.rows = 7;
-  noteTextBox.cols = 12;
-  newNote.appendChild(noteText);
-  newNote.appendChild(noteTextBox);
-  board.appendChild(newNote);
-  if (creatingNew) {
-    noteText.style.display = 'none';
-    typing = true;
-    noteTextBox.focus();
-  } else {
-    noteTextBox.style.display = 'none';
-    noteText.innerHTML = text;
-  }
+  const newNote = note.Note(posX, posY, text, noteID, creatingNew);
   noteElements[noteID] = newNote;
-  currentNote = newNote;
 };
 
 const recieveBoard = (noteData) => {
@@ -148,6 +56,10 @@ const noteAdded = (data) => {
 };
 
 const addNote = (e) => {
+  if (e.target.classList.contains('note')) {
+    return;
+  }
+
   const posX = e.clientX - NOTE_SIZE.x/2;
   const posY = e.clientY - NOTE_SIZE.y/2;
 
@@ -162,22 +74,30 @@ const addNote = (e) => {
   client.emit('addNote', notes[noteID]);
 };
 
+const updateNote = (x, y, noteID) => {
+  notes[noteID].x = x;
+  notes[noteID].y = y;
+};
+
 const init = () => {
   board = document.querySelector('#board');
-  board.addEventListener('mousedown', mouseDown);
-  board.addEventListener('mousemove', drag);
-  board.addEventListener('mouseup', mouseUp);
+  board.addEventListener('mousedown', note.mouseDown);
+  board.addEventListener('mousemove', note.drag);
+  board.addEventListener('mouseup', note.mouseUp);
   board.addEventListener('dblclick', addNote);
   notes = {};
   noteElements = {};
 };
 
 const getNotes = () => { return notes; };
+const getBoard = () => { return board; };
 
 module.exports.init = init;
 module.exports.setup = setup;
+module.exports.board = getBoard;
 module.exports.recieveBoard = recieveBoard;
 module.exports.noteAdded = noteAdded;
+module.exports.updateNote = updateNote;
 module.exports.noteDragged = noteDragged;
 module.exports.noteUpdated = noteUpdated;
 module.exports.notes = getNotes;
