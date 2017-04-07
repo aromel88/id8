@@ -140,18 +140,17 @@ var createNote = function createNote(posX, posY, text, noteID) {
   noteElements[noteID] = newNote;
 };
 
-var setup = function setup(userName, noteData) {
-  name = userName;
+var recieveBoard = function recieveBoard(noteData) {
+  notes = noteData;
+  Object.keys(noteData).forEach(function (key) {
+    createNote(noteData[key].x, noteData[key].y, noteData[key].text, noteData[key].noteID);
+  });
+};
+
+var setup = function setup(data) {
+  name = data;
   ui.hideAll();
   board.style.display = 'block';
-  if (noteData) {
-    notes = noteData;
-    Object.keys(noteData).forEach(function (key) {
-      createNote(noteData[key].x, noteData[key].y, noteData[key].text, noteData[key].noteID);
-    });
-  } else {
-    // there are no notes, tell how to make notes
-  }
 };
 
 var noteAdded = function noteAdded(data) {
@@ -184,11 +183,16 @@ var init = function init() {
   noteElements = {};
 };
 
+var getNotes = function getNotes() {
+  return notes;
+};
+
 module.exports.init = init;
 module.exports.setup = setup;
+module.exports.recieveBoard = recieveBoard;
 module.exports.noteAdded = noteAdded;
 module.exports.noteDragged = noteDragged;
-module.exports.notes = notes;
+module.exports.notes = getNotes;
 
 /***/ }),
 /* 1 */
@@ -257,6 +261,10 @@ var connect = function connect() {
   client.connect(connectData);
 };
 
+var updateUserList = function updateUserList(data) {
+  console.dir(data);
+};
+
 var init = function init() {
   // get references to DOM elements and hook up events
   landingScreen = document.querySelector('#landing-screen');
@@ -284,6 +292,7 @@ var init = function init() {
 
 module.exports.init = init;
 module.exports.hideAll = hideAll;
+module.exports.updateUserList = updateUserList;
 
 /***/ }),
 /* 2 */
@@ -325,6 +334,7 @@ if(false) {
   by Aaron Romel
 */
 
+var ui = __webpack_require__(1);
 var board = __webpack_require__(0);
 var host = __webpack_require__(5);
 
@@ -335,12 +345,14 @@ var createSuccess = function createSuccess(data) {
   roomCode = data.roomCode;
   host.init();
   board.setup(data.userName);
+  ui.updateUserList(data.userList);
   console.log(roomCode);
 };
 
 var joinSuccess = function joinSuccess(data) {
   roomCode = data.roomCode;
-  board.setup(data.userName, data.noteData);
+  board.setup(data.userName);
+  ui.updateUserList(data.userList);
 };
 
 // connect socketio server
@@ -349,8 +361,10 @@ var connect = function connect(connectData) {
   socket = io.connect();
   socket.on('createSuccess', createSuccess);
   socket.on('joinSuccess', joinSuccess);
+  socket.on('recieveBoard', board.recieveBoard);
   socket.on('noteAdded', board.noteAdded);
   socket.on('noteDragged', board.noteDragged);
+  socket.on('requestBoard', host.requestBoard);
 
   // attempt connection with websocket server
   socket.emit('attemptConnect', connectData);
@@ -399,9 +413,17 @@ window.addEventListener('load', init);
 "use strict";
 
 
+var board = __webpack_require__(0);
+var client = __webpack_require__(3);
+
+var requestBoard = function requestBoard(data) {
+  client.emit('sendBoard', { toUser: data.userRequesting, notes: board.notes() });
+};
+
 var init = function init() {};
 
 module.exports.init = init;
+module.exports.requestBoard = requestBoard;
 
 /***/ }),
 /* 6 */
@@ -2330,7 +2352,7 @@ exports = module.exports = __webpack_require__(9)(undefined);
 
 
 // module
-exports.push([module.i, "* {\n  margin: 0;\n  padding: 0; }\n\n*:focus {\n  outline: none; }\n\nbody {\n  width: 100%;\n  height: 100vh;\n  background-color: #4ABDAC; }\n\n/*\n  _landing.scss\n  styles for landing screen\n\n  by Aaron Romel\n*/\n.button, #make-button, #join-button, #connect-button, #back-button {\n  display: block;\n  width: 212px;\n  height: 40px;\n  margin: auto;\n  background-color: #FC4A1A;\n  color: white;\n  box-shadow: 0px 3px 2px #E0E0E0;\n  border: none;\n  border-radius: 3px;\n  font-size: 1.1em;\n  position: absolute;\n  left: 50%;\n  transform: translate(-50%, 0);\n  transition: width 0.15s, height 0.15s, box-shadow 0.15s; }\n  .button:hover, #make-button:hover, #join-button:hover, #connect-button:hover, #back-button:hover {\n    cursor: pointer;\n    box-shadow: 4px 7px 7px #E0E0E0, -4px 0px 7px #E0E0E0;\n    width: 217px;\n    height: 45px; }\n  .button:active, #make-button:active, #join-button:active, #connect-button:active, #back-button:active {\n    box-shadow: 0px 3px 2px #E0E0E0;\n    width: 212px;\n    height: 40px; }\n\n#landing-screen {\n  position: absolute;\n  background-color: white;\n  width: 500px;\n  height: 400px;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%);\n  border-radius: 5px;\n  box-shadow: 0px 7px 5px rgba(0, 0, 0, 0.4); }\n\n#landing-screen img {\n  margin: auto;\n  position: absolute;\n  left: 50%;\n  top: 20px;\n  transform: translate(-50%, 0); }\n\n#landing-controls {\n  position: relative;\n  top: 250px; }\n\n#join-button {\n  top: 55px; }\n\n/* connect controls */\n#connect-controls {\n  opacity: 0;\n  display: none;\n  position: relative;\n  top: 250px; }\n\ninput[type='text'] {\n  display: block;\n  margin: auto;\n  width: 200px;\n  padding: 4px;\n  font-size: 1em;\n  border-radius: 4px;\n  border: 2px solid #E0E0E0;\n  position: relative;\n  margin-bottom: 10px; }\n\n#break {\n  width: 212px;\n  height: 2px;\n  margin: auto;\n  background-color: #E0E0E0; }\n\n#connect-button {\n  top: 125px; }\n\n#back-button {\n  background-color: #4ABDAC;\n  top: 180px; }\n\n#board {\n  display: none;\n  height: 100vh;\n  width: 100%;\n  overflow: auto; }\n\n.note {\n  width: 100px;\n  height: 100px;\n  background-color: white;\n  position: absolute;\n  transition: left .1s, top .1s;\n  border-radius: 4px;\n  box-shadow: 0px 4px 2px rgba(0, 0, 0, 0.4); }\n\n.note:hover {\n  opacity: 0.6;\n  cursor: pointer; }\n\n.note:active {\n  opacity: 1;\n  cursor: grab; }\n\n.note p {\n  pointer-events: none; }\n\n/*# sourceMappingURL=app.css.map */\n", ""]);
+exports.push([module.i, "* {\n  margin: 0;\n  padding: 0; }\n\n*:focus {\n  outline: none; }\n\nbody {\n  width: 100%;\n  height: 100vh;\n  background-color: #4ABDAC; }\n\n/*\n  _landing.scss\n  styles for landing screen\n\n  by Aaron Romel\n*/\n.button, #make-button, #join-button, #connect-button, #back-button {\n  display: block;\n  width: 212px;\n  height: 40px;\n  margin: auto;\n  background-color: #FC4A1A;\n  color: white;\n  box-shadow: 0px 3px 2px #E0E0E0;\n  border: none;\n  border-radius: 3px;\n  font-size: 1.1em;\n  position: absolute;\n  left: 50%;\n  transform: translate(-50%, 0);\n  transition: width 0.15s, height 0.15s, box-shadow 0.15s; }\n  .button:hover, #make-button:hover, #join-button:hover, #connect-button:hover, #back-button:hover {\n    cursor: pointer;\n    box-shadow: 4px 7px 3px #E0E0E0, -4px -2px 3px #E0E0E0;\n    width: 217px;\n    height: 45px; }\n  .button:active, #make-button:active, #join-button:active, #connect-button:active, #back-button:active {\n    box-shadow: 0px 3px 2px #E0E0E0;\n    width: 212px;\n    height: 40px; }\n\n#landing-screen {\n  position: absolute;\n  background-color: white;\n  width: 500px;\n  height: 400px;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%);\n  border-radius: 5px;\n  box-shadow: 0px 7px 5px rgba(0, 0, 0, 0.4); }\n\n#landing-screen img {\n  margin: auto;\n  position: absolute;\n  left: 50%;\n  top: 20px;\n  transform: translate(-50%, 0); }\n\n#landing-controls {\n  position: relative;\n  top: 250px; }\n\n#join-button {\n  top: 55px; }\n\n/* connect controls */\n#connect-controls {\n  opacity: 0;\n  display: none;\n  position: relative;\n  top: 250px; }\n\ninput[type='text'] {\n  display: block;\n  margin: auto;\n  width: 200px;\n  padding: 4px;\n  font-size: 1em;\n  border-radius: 4px;\n  border: 2px solid #E0E0E0;\n  position: relative;\n  margin-bottom: 10px; }\n\n#break {\n  width: 212px;\n  height: 2px;\n  margin: auto;\n  background-color: #E0E0E0; }\n\n#connect-button {\n  top: 125px; }\n\n#back-button {\n  background-color: #4ABDAC;\n  top: 180px; }\n\n#board {\n  display: none;\n  height: 100vh;\n  width: 100%;\n  overflow: auto; }\n\n.note {\n  width: 100px;\n  height: 100px;\n  background-color: white;\n  position: absolute;\n  transition: left .1s, top .1s;\n  border-radius: 4px;\n  box-shadow: 0px 4px 2px rgba(0, 0, 0, 0.4); }\n\n.note:hover {\n  opacity: 0.6;\n  cursor: pointer; }\n\n.note:active {\n  opacity: 1;\n  cursor: grab; }\n\n.note p {\n  pointer-events: none; }\n\n/*# sourceMappingURL=app.css.map */\n", ""]);
 
 // exports
 

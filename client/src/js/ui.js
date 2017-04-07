@@ -59,6 +59,10 @@ const connect = () => {
   client.connect(connectData);
 };
 
+const updateUserList = (data) => {
+  console.dir(data);
+};
+
 const init = () => {
   // get references to DOM elements and hook up events
   landingScreen = document.querySelector('#landing-screen');
@@ -86,3 +90,4 @@ const init = () => {
 
 module.exports.init = init;
 module.exports.hideAll = hideAll;
+module.exports.updateUserList = updateUserList;

@@ -33,7 +33,7 @@ body {
   transition: width 0.15s, height 0.15s, box-shadow 0.15s; }
   .button:hover, #make-button:hover, #join-button:hover, #connect-button:hover, #back-button:hover {
     cursor: pointer;
-    box-shadow: 4px 7px 7px #E0E0E0, -4px 0px 7px #E0E0E0;
+    box-shadow: 4px 7px 3px #E0E0E0, -4px -2px 3px #E0E0E0;
     width: 217px;
     height: 45px; }
   .button:active, #make-button:active, #join-button:active, #connect-button:active, #back-button:active {

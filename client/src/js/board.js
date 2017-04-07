@@ -64,23 +64,22 @@ const createNote = (posX, posY, text, noteID) => {
   noteElements[noteID] = newNote;
 };
 
-const setup = (userName, noteData) => {
-  name = userName;
+const recieveBoard = (noteData) => {
+  notes = noteData;
+  Object.keys(noteData).forEach((key) => {
+    createNote(
+      noteData[key].x,
+      noteData[key].y,
+      noteData[key].text,
+      noteData[key].noteID
+    );
+  });
+};
+
+const setup = (data) => {
+  name = data;
   ui.hideAll();
   board.style.display = 'block';
-  if (noteData) {
-    notes = noteData;
-    Object.keys(noteData).forEach((key) => {
-      createNote(
-        noteData[key].x,
-        noteData[key].y,
-        noteData[key].text,
-        noteData[key].noteID
-      );
-    });
-  } else {
-    // there are no notes, tell how to make notes
-  }
 };
 
 const noteAdded = (data) => {
@@ -113,8 +112,11 @@ const init = () => {
   noteElements = {};
 };
 
+const getNotes = () => { return notes; };
+
 module.exports.init = init;
 module.exports.setup = setup;
+module.exports.recieveBoard = recieveBoard;
 module.exports.noteAdded = noteAdded;
 module.exports.noteDragged = noteDragged;
-module.exports.notes = notes;
+module.exports.notes = getNotes;

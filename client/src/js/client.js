@@ -5,6 +5,7 @@
   by Aaron Romel
 */
 
+const ui = require('./ui');
 const board = require('./board');
 const host = require('./host');
 
@@ -15,12 +16,14 @@ const createSuccess = (data) => {
   roomCode = data.roomCode;
   host.init();
   board.setup(data.userName);
+  ui.updateUserList(data.userList);
   console.log(roomCode);
 };
 
 const joinSuccess = (data) => {
   roomCode = data.roomCode;
-  board.setup(data.userName, data.noteData);
+  board.setup(data.userName);
+  ui.updateUserList(data.userList);
 };
 
 // connect socketio server
@@ -29,8 +32,10 @@ const connect = (connectData) => {
   socket = io.connect();
   socket.on('createSuccess', createSuccess);
   socket.on('joinSuccess', joinSuccess);
+  socket.on('recieveBoard', board.recieveBoard);
   socket.on('noteAdded', board.noteAdded);
   socket.on('noteDragged', board.noteDragged);
+  socket.on('requestBoard', host.requestBoard);
 
   // attempt connection with websocket server
   socket.emit('attemptConnect', connectData);
