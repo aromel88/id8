@@ -36,10 +36,6 @@ const mouseDown = (e) => {
   if (e.target.classList.contains('note')) {
     currentNote = e.target;
     dragging = true;
-    // TweenMax.to(currentNote, 0, {
-    //   left: e.clientX - currentNote.offsetWidth/2,
-    //   top: e.clientY - currentNote.offsetHeight/2
-    // });
   }
 };
 

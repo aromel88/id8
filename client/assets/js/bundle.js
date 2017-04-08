@@ -93,6 +93,10 @@ var noteUpdated = function noteUpdated(noteData) {
   noteElement.childNodes[0].innerHTML = noteData.text;
 };
 
+var lerp = function lerp(v0, v1, alpha) {
+  return (1 - alpha) * v0 + alpha * v1;
+};
+
 var noteDragged = function noteDragged(dragData) {
   var noteToDrag = noteElements[dragData.noteID];
   var noteToUpdate = notes[dragData.noteID];
@@ -137,8 +141,13 @@ var addNote = function addNote(e) {
   notes[noteID] = {
     x: posX,
     y: posY,
+    prevX: posX,
+    prevY: posY,
+    destX: posX,
+    destY: posY,
     text: '',
-    noteID: noteID
+    noteID: noteID,
+    lastUpdate: new Date().getTime()
   };
   createNote(posX, posY, '', noteID, true);
   client.emit('addNote', notes[noteID]);
@@ -411,10 +420,6 @@ var mouseDown = function mouseDown(e) {
   if (e.target.classList.contains('note')) {
     currentNote = e.target;
     dragging = true;
-    // TweenMax.to(currentNote, 0, {
-    //   left: e.clientX - currentNote.offsetWidth/2,
-    //   top: e.clientY - currentNote.offsetHeight/2
-    // });
   }
 };
 
@@ -2479,7 +2484,7 @@ exports = module.exports = __webpack_require__(10)(undefined);
 
 
 // module
-exports.push([module.i, "* {\n  margin: 0;\n  padding: 0; }\n\n*:focus {\n  outline: none; }\n\nbody {\n  width: 100%;\n  height: 100vh;\n  background-color: #4ABDAC;\n  font-family: \"Roboto\", sans-serif; }\n\n/*\n  _landing.scss\n  styles for landing screen\n\n  by Aaron Romel\n*/\n.button, #make-button, #join-button, #connect-button, #back-button {\n  display: block;\n  width: 212px;\n  height: 40px;\n  margin: auto;\n  background-color: #FC4A1A;\n  color: white;\n  box-shadow: 0px 3px 2px #E0E0E0;\n  border: none;\n  border-radius: 3px;\n  font-size: 1.1em;\n  position: absolute;\n  left: 50%;\n  transform: translate(-50%, 0);\n  transition: width 0.15s, height 0.15s, box-shadow 0.15s; }\n  .button:hover, #make-button:hover, #join-button:hover, #connect-button:hover, #back-button:hover {\n    cursor: pointer;\n    box-shadow: 4px 7px 3px #E0E0E0, -4px -2px 3px #E0E0E0;\n    width: 217px;\n    height: 45px; }\n  .button:active, #make-button:active, #join-button:active, #connect-button:active, #back-button:active {\n    box-shadow: 0px 3px 2px #E0E0E0;\n    width: 212px;\n    height: 40px; }\n\n#landing-screen {\n  position: absolute;\n  background-color: white;\n  width: 500px;\n  height: 400px;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%);\n  border-radius: 5px;\n  box-shadow: 0px 7px 5px rgba(0, 0, 0, 0.4); }\n\n#landing-screen img {\n  margin: auto;\n  position: absolute;\n  left: 50%;\n  top: 20px;\n  transform: translate(-50%, 0); }\n\n#landing-controls {\n  position: relative;\n  top: 250px; }\n\n#join-button {\n  top: 55px; }\n\n/* connect controls */\n#connect-controls {\n  opacity: 0;\n  display: none;\n  position: relative;\n  top: 250px; }\n\ninput[type='text'] {\n  display: block;\n  margin: auto;\n  width: 200px;\n  padding: 4px;\n  font-size: 1em;\n  border-radius: 4px;\n  border: 2px solid #E0E0E0;\n  position: relative;\n  margin-bottom: 10px; }\n\n#connect-button {\n  top: 125px; }\n\n#back-button {\n  background-color: #4ABDAC;\n  top: 180px; }\n\n#board {\n  display: none;\n  height: 100vh;\n  width: 100%;\n  overflow: auto; }\n\n.note {\n  width: 100px;\n  height: auto;\n  min-height: 100px;\n  background-color: white;\n  position: absolute;\n  transition: left .1s, top .1s;\n  border-radius: 4px;\n  box-shadow: 0px 4px 2px rgba(0, 0, 0, 0.4); }\n\n.note:hover {\n  opacity: 0.6;\n  cursor: pointer; }\n\n.note:active {\n  opacity: 1;\n  cursor: grab; }\n\n.note textarea {\n  border: none;\n  resize: none;\n  position: relative;\n  top: 5px;\n  left: 5px;\n  font-family: \"Roboto\", sans-serif;\n  font-size: 1em; }\n\n.note p {\n  pointer-events: none;\n  position: relative;\n  top: 5px;\n  left: 5px;\n  width: 90px;\n  height: 90px;\n  word-wrap: normal; }\n\n/*# sourceMappingURL=app.css.map */\n", ""]);
+exports.push([module.i, "* {\r\n  margin: 0;\r\n  padding: 0; }\r\n\r\n*:focus {\r\n  outline: none; }\r\n\r\nbody {\r\n  width: 100%;\r\n  height: 100vh;\r\n  background-color: #4ABDAC;\r\n  font-family: \"Roboto\", sans-serif; }\r\n\r\n/*\r\n  _landing.scss\r\n  styles for landing screen\r\n\r\n  by Aaron Romel\r\n*/\r\n.button, #make-button, #join-button, #connect-button, #back-button {\r\n  display: block;\r\n  width: 212px;\r\n  height: 40px;\r\n  margin: auto;\r\n  background-color: #FC4A1A;\r\n  color: white;\r\n  box-shadow: 0px 3px 2px #E0E0E0;\r\n  border: none;\r\n  border-radius: 3px;\r\n  font-size: 1.1em;\r\n  position: absolute;\r\n  left: 50%;\r\n  transform: translate(-50%, 0);\r\n  transition: width 0.15s, height 0.15s, box-shadow 0.15s; }\r\n  .button:hover, #make-button:hover, #join-button:hover, #connect-button:hover, #back-button:hover {\r\n    cursor: pointer;\r\n    box-shadow: 4px 7px 3px #E0E0E0, -4px -2px 3px #E0E0E0;\r\n    width: 217px;\r\n    height: 45px; }\r\n  .button:active, #make-button:active, #join-button:active, #connect-button:active, #back-button:active {\r\n    box-shadow: 0px 3px 2px #E0E0E0;\r\n    width: 212px;\r\n    height: 40px; }\r\n\r\n#landing-screen {\r\n  position: absolute;\r\n  background-color: white;\r\n  width: 500px;\r\n  height: 400px;\r\n  top: 50%;\r\n  left: 50%;\r\n  transform: translate(-50%, -50%);\r\n  border-radius: 5px;\r\n  box-shadow: 0px 7px 5px rgba(0, 0, 0, 0.4); }\r\n\r\n#landing-screen img {\r\n  margin: auto;\r\n  position: absolute;\r\n  left: 50%;\r\n  top: 20px;\r\n  transform: translate(-50%, 0); }\r\n\r\n#landing-controls {\r\n  position: relative;\r\n  top: 250px; }\r\n\r\n#join-button {\r\n  top: 55px; }\r\n\r\n/* connect controls */\r\n#connect-controls {\r\n  opacity: 0;\r\n  display: none;\r\n  position: relative;\r\n  top: 250px; }\r\n\r\ninput[type='text'] {\r\n  display: block;\r\n  margin: auto;\r\n  width: 200px;\r\n  padding: 4px;\r\n  font-size: 1em;\r\n  border-radius: 4px;\r\n  border: 2px solid #E0E0E0;\r\n  position: relative;\r\n  margin-bottom: 10px; }\r\n\r\n#connect-button {\r\n  top: 125px; }\r\n\r\n#back-button {\r\n  background-color: #4ABDAC;\r\n  top: 180px; }\r\n\r\n#board {\r\n  display: none;\r\n  height: 100vh;\r\n  width: 100%;\r\n  overflow: auto; }\r\n\r\n.note {\r\n  width: 100px;\r\n  height: auto;\r\n  min-height: 100px;\r\n  background-color: white;\r\n  position: absolute;\r\n  transition: left .1s, top .1s;\r\n  border-radius: 4px;\r\n  box-shadow: 0px 4px 2px rgba(0, 0, 0, 0.4); }\r\n\r\n.note:hover {\r\n  opacity: 0.6;\r\n  cursor: pointer; }\r\n\r\n.note:active {\r\n  opacity: 1;\r\n  cursor: grab; }\r\n\r\n.note textarea {\r\n  border: none;\r\n  resize: none;\r\n  position: relative;\r\n  top: 5px;\r\n  left: 5px;\r\n  font-family: \"Roboto\", sans-serif;\r\n  font-size: 1em; }\r\n\r\n.note p {\r\n  pointer-events: none;\r\n  position: relative;\r\n  top: 5px;\r\n  left: 5px;\r\n  width: 90px;\r\n  height: 90px;\r\n  word-wrap: normal; }\r\n\r\n/*# sourceMappingURL=app.css.map */\r\n", ""]);
 
 // exports
 
