@@ -124,9 +124,18 @@ var draw = function draw() {
   requestAnimationFrame(draw);
 };
 
+var showCollisions = function showCollisions(collisionData) {
+  Object.keys(noteElements).forEach(function (key) {
+    if (collisionData.indexOf(key) > -1) {
+      noteElements[key].style.backgroundColor = 'red';
+    } else {
+      noteElements[key].style.backgroundColor = 'white';
+    }
+  });
+};
+
 var setup = function setup(data, roomCode) {
   name = data;
-  console.log(roomCode);
   ui.hideAll(roomCode);
   board.style.display = 'block';
 };
@@ -201,6 +210,7 @@ module.exports.noteAdded = noteAdded;
 module.exports.updateNote = updateNote;
 module.exports.noteUpdated = noteUpdated;
 module.exports.notes = getNotes;
+module.exports.showCollisions = showCollisions;
 
 /***/ }),
 /* 1 */
@@ -248,6 +258,7 @@ var connect = function connect(connectData) {
   socket.on('noteUpdate', board.noteUpdated);
   socket.on('requestBoard', host.requestBoard);
   socket.on('updateUserList', ui.updateUserList);
+  socket.on('updateCollisions', board.showCollisions);
 
   // attempt connection with websocket server
   socket.emit('attemptConnect', connectData);
@@ -615,11 +626,39 @@ window.addEventListener('load', init);
 var board = __webpack_require__(0);
 var client = __webpack_require__(1);
 
+var NOTE_SIZE = { width: 100, height: 100 };
+
+var collides = function collides(rect1, rect2) {
+  if (rect1.x < rect2.x + NOTE_SIZE.width && rect1.x + NOTE_SIZE.width > rect2.x && rect1.y < rect2.y + NOTE_SIZE.height && NOTE_SIZE.height + rect1.y > rect2.y) {
+    return true;
+  }
+  return false;
+};
+
+var checkCollisions = function checkCollisions() {
+  var notes = board.notes();
+  var noteKeys = Object.keys(notes);
+  var notesColliding = [];
+  for (var i = 0; i < noteKeys.length - 1; i += 1) {
+    var noteA = notes[noteKeys[i]];
+    for (var j = i + 1; j < noteKeys.length; j += 1) {
+      var noteB = notes[noteKeys[j]];
+      if (collides(noteA, noteB)) {
+        notesColliding.push(noteKeys[i]);
+        notesColliding.push(noteKeys[j]);
+      }
+    }
+  }
+  client.emit('collisions', notesColliding);
+};
+
 var requestBoard = function requestBoard(data) {
   client.emit('sendBoard', { toUser: data.userRequesting, notes: board.notes() });
 };
 
-var init = function init() {};
+var init = function init() {
+  setInterval(checkCollisions, 20);
+};
 
 module.exports.init = init;
 module.exports.requestBoard = requestBoard;

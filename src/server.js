@@ -26,6 +26,7 @@ const onMsg = (sock) => {
   socket.on('dragNote', (data) => { board.dragNote(socket, data); });
   socket.on('sendBoard', (data) => { board.recieveBoard(socket, data); });
   socket.on('updateNoteText', (data) => { board.updateNoteText(socket, data); });
+  socket.on('collisions', (data) => { board.sendCollisions(socket, data); });
 };
 
 const onDisconnect = (sock) => {
@@ -46,5 +47,8 @@ const init = (expressApp) => {
   console.log('Websocket server running');
 };
 
+const getIO = () => io;
+
 module.exports.init = init;
 module.exports.rooms = rooms;
+module.exports.io = getIO;

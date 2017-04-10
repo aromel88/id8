@@ -54,9 +54,18 @@ const draw = () => {
   requestAnimationFrame(draw);
 };
 
+const showCollisions = (collisionData) => {
+  Object.keys(noteElements).forEach((key) => {
+    if (collisionData.indexOf(key) > -1) {
+      noteElements[key].style.backgroundColor = 'red';
+    } else {
+      noteElements[key].style.backgroundColor = 'white';
+    }
+  });
+};
+
 const setup = (data, roomCode) => {
   name = data;
-  console.log(roomCode);
   ui.hideAll(roomCode);
   board.style.display = 'block';
 };
@@ -127,3 +136,4 @@ module.exports.noteAdded = noteAdded;
 module.exports.updateNote = updateNote;
 module.exports.noteUpdated = noteUpdated;
 module.exports.notes = getNotes;
+module.exports.showCollisions = showCollisions;
