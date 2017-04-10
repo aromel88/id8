@@ -649,9 +649,9 @@ var checkCollisions = function checkCollisions() {
       }
     }
   }
-  if (notesColliding.length > 0) {
-    client.emit('collisions', notesColliding);
-  }
+  // if (notesColliding.length > 0) {
+  //   client.emit('collisions', notesColliding);
+  // }
 };
 
 var requestBoard = function requestBoard(data) {

@@ -28,9 +28,9 @@ const checkCollisions = () => {
       }
     }
   }
-  if (notesColliding.length > 0) {
-    client.emit('collisions', notesColliding);
-  }
+  // if (notesColliding.length > 0) {
+  //   client.emit('collisions', notesColliding);
+  // }
 
 };
 
