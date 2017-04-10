@@ -109,3 +109,39 @@ input[type='text'] {
   background-color: $primary-color;
   top: 180px;
 }
+
+#sidebar {
+  width: 250px;
+  height: 100vh;
+  background-color: rgba(0,0,0,0.7);
+  position: absolute;
+  left: -200px;
+  top: 0px;
+  opacity: 0;
+}
+
+#sidebar-break {
+  width: 2px;
+  height: 100vh;
+  background-color: $dark-gray;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+}
+
+.sidebar-button {
+  position: absolute;
+  left: 200px;
+  width: 30px;
+  height: 30px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+.sidebar-button:hover {
+  background-color: white;
+  cursor: pointer;
+}
+
+#menu-icon {
+  top: 20px;
+}

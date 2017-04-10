@@ -12,9 +12,13 @@ let connectButton;
 let backButton;
 let roomInput;
 let nameInput;
+let sidebar;
+let sidebarBreak;
+let menuButton;
 
 // connection logic variables
 let connectionType;
+let menuActive = false;
 
 const showConnectControls = (type) => {
   if (type === 'join') {
@@ -46,7 +50,20 @@ const hideAll = () => {
       landingScreen.style.display = 'none';
     }
   });
+  sidebar.style.display = 'block';
   TweenMax.to(document.querySelector('body'), 0.5, { backgroundColor: "#F7B733" });
+  TweenMax.to(sidebar, 0.5, { opacity: 1 });
+};
+
+const showMenu = () => {
+  menuActive = !menuActive;
+  if (menuActive) {
+    TweenMax.to(sidebar, 0.3, { left: '0px' });
+    TweenMax.to(sidebarBreak, 0.03, { left: '200px' });
+  } else {
+    TweenMax.to(sidebarBreak, 3.0, { left: '0px' });
+    TweenMax.to(sidebar, 0.3, { left: '-200px' });
+  }
 };
 
 const connect = () => {
@@ -68,6 +85,8 @@ const init = () => {
   landingScreen = document.querySelector('#landing-screen');
   landingControls = document.querySelector('#landing-controls');
   connectControls = document.querySelector('#connect-controls');
+  sidebar = document.querySelector('#sidebar');
+  sidebarBreak = document.querySelector('#sidebar-break');
 
   makeButton = document.querySelector('#make-button');
   makeButton.addEventListener('click', () => {
@@ -83,6 +102,8 @@ const init = () => {
   connectButton.addEventListener('click', connect);
   backButton = document.querySelector('#back-button');
   backButton.addEventListener('click', hideConnectControls);
+  menuButton = document.querySelector('#menu-icon');
+  menuButton.addEventListener('click', showMenu);
 
   roomInput = document.querySelector('#room-input');
   nameInput = document.querySelector('#name-input');
