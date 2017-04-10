@@ -117,7 +117,7 @@ input[type='text'] {
   height: 100vh;
   background-color: #FC4A1A;
   position: absolute;
-  left: 200px;
+  left: 300px;
   top: 0px; }
 
 #menu-button {
@@ -139,7 +139,8 @@ input[type='text'] {
 #user-list {
   list-style-type: none;
   position: absolute;
-  top: 130px; }
+  top: 130px;
+  left: 20px; }
 
 #board {
   display: none;

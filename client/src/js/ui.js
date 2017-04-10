@@ -55,7 +55,7 @@ const hideAll = (roomCode) => {
     }
   });
   sidebar.style.display = 'block';
-  TweenMax.to(document.querySelector('body'), 0.5, { backgroundColor: "#F7B733" });
+  TweenMax.to(document.querySelector('body'), 0.5, { backgroundColor: "#F5F5F5" });
   TweenMax.to(sidebar, 0.5, { opacity: 1 });
 };
 

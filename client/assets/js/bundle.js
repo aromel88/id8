@@ -97,15 +97,6 @@ var lerp = function lerp(v0, v1, alpha) {
   return (1 - alpha) * v0 + alpha * v1;
 };
 
-var noteDragged = function noteDragged(dragData) {
-  var noteToDrag = noteElements[dragData.noteID];
-  var noteToUpdate = notes[dragData.noteID];
-  noteToDrag.style.left = dragData.x + 'px';
-  noteToDrag.style.top = dragData.y + 'px';
-  noteToUpdate.x = dragData.x;
-  noteToUpdate.y = dragData.y;
-};
-
 var createNote = function createNote(posX, posY, text, noteID, creatingNew) {
   var newNote = note.Note(posX, posY, text, noteID, creatingNew);
   noteElements[noteID] = newNote;
@@ -154,9 +145,13 @@ var addNote = function addNote(e) {
   client.emit('addNote', notes[noteID]);
 };
 
-var updateNote = function updateNote(x, y, noteID) {
-  notes[noteID].x = x;
-  notes[noteID].y = y;
+var updateNote = function updateNote(dragData) {
+  var noteUpdate = notes[dragData.noteID];
+  var noteDrag = noteElements[dragData.noteID];
+  noteUpdate.x = dragData.x;
+  noteUpdate.y = dragData.y;
+  noteDrag.style.left = dragData.x + 'px';
+  noteDrag.style.top = dragData.y + 'px';
 };
 
 var init = function init() {
@@ -182,7 +177,6 @@ module.exports.board = getBoard;
 module.exports.recieveBoard = recieveBoard;
 module.exports.noteAdded = noteAdded;
 module.exports.updateNote = updateNote;
-module.exports.noteDragged = noteDragged;
 module.exports.noteUpdated = noteUpdated;
 module.exports.notes = getNotes;
 
@@ -228,7 +222,7 @@ var connect = function connect(connectData) {
   socket.on('joinSuccess', joinSuccess);
   socket.on('recieveBoard', board.recieveBoard);
   socket.on('noteAdded', board.noteAdded);
-  socket.on('noteDragged', board.noteDragged);
+  socket.on('noteDragged', board.updateNote);
   socket.on('noteUpdate', board.noteUpdated);
   socket.on('requestBoard', host.requestBoard);
   socket.on('updateUserList', ui.updateUserList);
@@ -315,7 +309,7 @@ var hideAll = function hideAll(roomCode) {
     }
   });
   sidebar.style.display = 'block';
-  TweenMax.to(document.querySelector('body'), 0.5, { backgroundColor: "#F7B733" });
+  TweenMax.to(document.querySelector('body'), 0.5, { backgroundColor: "#F5F5F5" });
   TweenMax.to(sidebar, 0.5, { opacity: 1 });
 };
 
@@ -466,10 +460,13 @@ var drag = function drag(e) {
 
   var xDrag = e.clientX - currentNote.offsetWidth / 2;
   var yDrag = e.clientY - currentNote.offsetHeight / 2;
-  currentNote.style.left = xDrag + 'px';
-  currentNote.style.top = yDrag + 'px';
-  board.updateNote(xDrag, yDrag, currentNote.noteID);
-  client.emit('dragNote', { noteID: currentNote.noteID, x: xDrag, y: yDrag });
+  var dragData = {
+    noteID: currentNote.noteID,
+    x: xDrag,
+    y: yDrag
+  };
+  board.updateNote(dragData);
+  client.emit('dragNote', dragData);
 };
 
 var mouseUp = function mouseUp(e) {
@@ -2519,7 +2516,7 @@ exports = module.exports = __webpack_require__(10)(undefined);
 
 
 // module
-exports.push([module.i, "* {\n  margin: 0;\n  padding: 0; }\n\n*:focus {\n  outline: none; }\n\nbody {\n  width: 100%;\n  height: 100vh;\n  background-color: #4ABDAC;\n  font-family: \"Roboto\", sans-serif; }\n\n/*\n  _landing.scss\n  styles for landing screen\n\n  by Aaron Romel\n*/\n.button, #make-button, #join-button, #connect-button, #back-button {\n  display: block;\n  width: 212px;\n  height: 40px;\n  margin: auto;\n  background-color: #FC4A1A;\n  color: white;\n  box-shadow: 0px 3px 2px #E0E0E0;\n  border: none;\n  border-radius: 3px;\n  font-size: 1.1em;\n  position: absolute;\n  left: 50%;\n  transform: translate(-50%, 0);\n  transition: width 0.15s, height 0.15s, box-shadow 0.15s; }\n  .button:hover, #make-button:hover, #join-button:hover, #connect-button:hover, #back-button:hover {\n    cursor: pointer;\n    box-shadow: 4px 7px 3px #E0E0E0, -4px -2px 3px #E0E0E0;\n    width: 217px;\n    height: 45px; }\n  .button:active, #make-button:active, #join-button:active, #connect-button:active, #back-button:active {\n    box-shadow: 0px 3px 2px #E0E0E0;\n    width: 212px;\n    height: 40px; }\n\n#landing-screen {\n  position: absolute;\n  background-color: white;\n  width: 500px;\n  height: 400px;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%);\n  border-radius: 5px;\n  box-shadow: 0px 7px 5px rgba(0, 0, 0, 0.4); }\n\n#landing-screen img {\n  margin: auto;\n  position: absolute;\n  left: 50%;\n  top: 20px;\n  transform: translate(-50%, 0); }\n\n#landing-controls {\n  position: relative;\n  top: 250px; }\n\n#join-button {\n  top: 55px; }\n\n/* connect controls */\n#connect-controls {\n  opacity: 0;\n  display: none;\n  position: relative;\n  top: 250px; }\n\ninput[type='text'] {\n  display: block;\n  margin: auto;\n  width: 200px;\n  padding: 4px;\n  font-size: 1em;\n  border-radius: 4px;\n  border: 2px solid #E0E0E0;\n  position: relative;\n  margin-bottom: 10px; }\n\n#copy-room-code {\n  position: relative;\n  top: 75px;\n  left: -50px;\n  text-align: center; }\n\n#connect-button {\n  top: 125px; }\n\n#back-button {\n  background-color: #4ABDAC;\n  top: 180px; }\n\n#sidebar {\n  width: 350px;\n  height: 100vh;\n  background-color: rgba(0, 0, 0, 0.7);\n  position: relative;\n  left: -300px;\n  top: -100vh;\n  opacity: 0;\n  color: white; }\n\n#sidebar p {\n  position: relative;\n  left: 50px; }\n\n#sidebar-break {\n  width: 2px;\n  height: 100vh;\n  background-color: #FC4A1A;\n  position: absolute;\n  left: 200px;\n  top: 0px; }\n\n#menu-button {\n  top: 20px;\n  position: absolute;\n  text-align: center;\n  line-height: 30px;\n  left: 300px;\n  width: 30px;\n  height: 30px;\n  padding-left: 10px;\n  padding-right: 10px;\n  color: #4ABDAC; }\n\n#menu-button:hover {\n  background-color: white;\n  cursor: pointer; }\n\n#user-list {\n  list-style-type: none;\n  position: absolute;\n  top: 130px; }\n\n#board {\n  display: none;\n  height: 100vh;\n  width: 100%;\n  overflow: auto; }\n\n.note {\n  width: 100px;\n  height: auto;\n  min-height: 100px;\n  background-color: white;\n  position: absolute;\n  transition: left .1s, top .1s;\n  border-radius: 4px;\n  box-shadow: 0px 4px 2px rgba(0, 0, 0, 0.4); }\n\n.note:hover {\n  opacity: 0.6;\n  cursor: pointer; }\n\n.note:active {\n  opacity: 1;\n  cursor: grab; }\n\n.note textarea {\n  border: none;\n  resize: none;\n  position: relative;\n  top: 5px;\n  left: 5px;\n  font-family: \"Roboto\", sans-serif;\n  font-size: 1em; }\n\n.note p {\n  pointer-events: none;\n  position: relative;\n  top: 5px;\n  left: 5px;\n  width: 90px;\n  height: 90px;\n  word-wrap: normal; }\n\n/*# sourceMappingURL=app.css.map */\n", ""]);
+exports.push([module.i, "* {\n  margin: 0;\n  padding: 0; }\n\n*:focus {\n  outline: none; }\n\nbody {\n  width: 100%;\n  height: 100vh;\n  background-color: #4ABDAC;\n  font-family: \"Roboto\", sans-serif; }\n\n/*\n  _landing.scss\n  styles for landing screen\n\n  by Aaron Romel\n*/\n.button, #make-button, #join-button, #connect-button, #back-button {\n  display: block;\n  width: 212px;\n  height: 40px;\n  margin: auto;\n  background-color: #FC4A1A;\n  color: white;\n  box-shadow: 0px 3px 2px #E0E0E0;\n  border: none;\n  border-radius: 3px;\n  font-size: 1.1em;\n  position: absolute;\n  left: 50%;\n  transform: translate(-50%, 0);\n  transition: width 0.15s, height 0.15s, box-shadow 0.15s; }\n  .button:hover, #make-button:hover, #join-button:hover, #connect-button:hover, #back-button:hover {\n    cursor: pointer;\n    box-shadow: 4px 7px 3px #E0E0E0, -4px -2px 3px #E0E0E0;\n    width: 217px;\n    height: 45px; }\n  .button:active, #make-button:active, #join-button:active, #connect-button:active, #back-button:active {\n    box-shadow: 0px 3px 2px #E0E0E0;\n    width: 212px;\n    height: 40px; }\n\n#landing-screen {\n  position: absolute;\n  background-color: white;\n  width: 500px;\n  height: 400px;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%);\n  border-radius: 5px;\n  box-shadow: 0px 7px 5px rgba(0, 0, 0, 0.4); }\n\n#landing-screen img {\n  margin: auto;\n  position: absolute;\n  left: 50%;\n  top: 20px;\n  transform: translate(-50%, 0); }\n\n#landing-controls {\n  position: relative;\n  top: 250px; }\n\n#join-button {\n  top: 55px; }\n\n/* connect controls */\n#connect-controls {\n  opacity: 0;\n  display: none;\n  position: relative;\n  top: 250px; }\n\ninput[type='text'] {\n  display: block;\n  margin: auto;\n  width: 200px;\n  padding: 4px;\n  font-size: 1em;\n  border-radius: 4px;\n  border: 2px solid #E0E0E0;\n  position: relative;\n  margin-bottom: 10px; }\n\n#copy-room-code {\n  position: relative;\n  top: 75px;\n  left: -50px;\n  text-align: center; }\n\n#connect-button {\n  top: 125px; }\n\n#back-button {\n  background-color: #4ABDAC;\n  top: 180px; }\n\n#sidebar {\n  width: 350px;\n  height: 100vh;\n  background-color: rgba(0, 0, 0, 0.7);\n  position: relative;\n  left: -300px;\n  top: -100vh;\n  opacity: 0;\n  color: white; }\n\n#sidebar p {\n  position: relative;\n  left: 50px; }\n\n#sidebar-break {\n  width: 2px;\n  height: 100vh;\n  background-color: #FC4A1A;\n  position: absolute;\n  left: 300px;\n  top: 0px; }\n\n#menu-button {\n  top: 20px;\n  position: absolute;\n  text-align: center;\n  line-height: 30px;\n  left: 300px;\n  width: 30px;\n  height: 30px;\n  padding-left: 10px;\n  padding-right: 10px;\n  color: #4ABDAC; }\n\n#menu-button:hover {\n  background-color: white;\n  cursor: pointer; }\n\n#user-list {\n  list-style-type: none;\n  position: absolute;\n  top: 130px;\n  left: 20px; }\n\n#board {\n  display: none;\n  height: 100vh;\n  width: 100%;\n  overflow: auto; }\n\n.note {\n  width: 100px;\n  height: auto;\n  min-height: 100px;\n  background-color: white;\n  position: absolute;\n  transition: left .1s, top .1s;\n  border-radius: 4px;\n  box-shadow: 0px 4px 2px rgba(0, 0, 0, 0.4); }\n\n.note:hover {\n  opacity: 0.6;\n  cursor: pointer; }\n\n.note:active {\n  opacity: 1;\n  cursor: grab; }\n\n.note textarea {\n  border: none;\n  resize: none;\n  position: relative;\n  top: 5px;\n  left: 5px;\n  font-family: \"Roboto\", sans-serif;\n  font-size: 1em; }\n\n.note p {\n  pointer-events: none;\n  position: relative;\n  top: 5px;\n  left: 5px;\n  width: 90px;\n  height: 90px;\n  word-wrap: normal; }\n\n/*# sourceMappingURL=app.css.map */\n", ""]);
 
 // exports
 

@@ -47,10 +47,13 @@ const drag = (e) => {
 
   const xDrag = e.clientX - currentNote.offsetWidth/2;
   const yDrag = e.clientY - currentNote.offsetHeight/2;
-  currentNote.style.left = `${xDrag}px`;
-  currentNote.style.top = `${yDrag}px`;
-  board.updateNote(xDrag, yDrag, currentNote.noteID);
-  client.emit('dragNote', { noteID: currentNote.noteID,  x: xDrag, y: yDrag });
+  const dragData = {
+    noteID: currentNote.noteID,
+    x: xDrag,
+    y: yDrag,
+  };
+  board.updateNote(dragData);
+  client.emit('dragNote', dragData);
 };
 
 const mouseUp = (e) => {

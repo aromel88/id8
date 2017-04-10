@@ -33,7 +33,7 @@ const connect = (connectData) => {
   socket.on('joinSuccess', joinSuccess);
   socket.on('recieveBoard', board.recieveBoard);
   socket.on('noteAdded', board.noteAdded);
-  socket.on('noteDragged', board.noteDragged);
+  socket.on('noteDragged', board.updateNote);
   socket.on('noteUpdate', board.noteUpdated);
   socket.on('requestBoard', host.requestBoard);
   socket.on('updateUserList', ui.updateUserList);

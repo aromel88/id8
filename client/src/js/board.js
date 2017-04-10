@@ -21,15 +21,6 @@ const lerp = (v0, v1, alpha) => {
   return (1 - alpha) * v0 + alpha * v1;
 };
 
-const noteDragged = (dragData) => {
-  const noteToDrag = noteElements[dragData.noteID];
-  const noteToUpdate = notes[dragData.noteID];
-  noteToDrag.style.left = `${dragData.x}px`;
-  noteToDrag.style.top = `${dragData.y}px`;
-  noteToUpdate.x = dragData.x;
-  noteToUpdate.y = dragData.y;
-};
-
 const createNote = (posX, posY, text, noteID, creatingNew) => {
   const newNote = note.Note(posX, posY, text, noteID, creatingNew);
   noteElements[noteID] = newNote;
@@ -84,9 +75,13 @@ const addNote = (e) => {
   client.emit('addNote', notes[noteID]);
 };
 
-const updateNote = (x, y, noteID) => {
-  notes[noteID].x = x;
-  notes[noteID].y = y;
+const updateNote = (dragData) => {
+  const noteUpdate = notes[dragData.noteID];
+  const noteDrag = noteElements[dragData.noteID];
+  noteUpdate.x = dragData.x;
+  noteUpdate.y = dragData.y;
+  noteDrag.style.left = `${dragData.x}px`;
+  noteDrag.style.top = `${dragData.y}px`;
 };
 
 const init = () => {
@@ -108,6 +103,5 @@ module.exports.board = getBoard;
 module.exports.recieveBoard = recieveBoard;
 module.exports.noteAdded = noteAdded;
 module.exports.updateNote = updateNote;
-module.exports.noteDragged = noteDragged;
 module.exports.noteUpdated = noteUpdated;
 module.exports.notes = getNotes;
