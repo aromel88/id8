@@ -93,6 +93,10 @@ var noteUpdated = function noteUpdated(noteData) {
   noteElement.childNodes[0].innerHTML = noteData.text;
 };
 
+var lerp = function lerp(v0, v1, alpha) {
+  return (1 - alpha) * v0 + alpha * v1;
+};
+
 var noteDragged = function noteDragged(dragData) {
   var noteToDrag = noteElements[dragData.noteID];
   var noteToUpdate = notes[dragData.noteID];
@@ -137,8 +141,13 @@ var addNote = function addNote(e) {
   notes[noteID] = {
     x: posX,
     y: posY,
+    prevX: posX,
+    prevY: posY,
+    destX: posX,
+    destY: posY,
     text: '',
-    noteID: noteID
+    noteID: noteID,
+    lastUpdate: new Date().getTime()
   };
   createNote(posX, posY, '', noteID, true);
   client.emit('addNote', notes[noteID]);
@@ -432,10 +441,6 @@ var mouseDown = function mouseDown(e) {
   if (e.target.classList.contains('note')) {
     currentNote = e.target;
     dragging = true;
-    // TweenMax.to(currentNote, 0, {
-    //   left: e.clientX - currentNote.offsetWidth/2,
-    //   top: e.clientY - currentNote.offsetHeight/2
-    // });
   }
 };
 

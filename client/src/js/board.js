@@ -17,6 +17,10 @@ const noteUpdated = (noteData) => {
   noteElement.childNodes[0].innerHTML = noteData.text;
 };
 
+const lerp = (v0, v1, alpha) => {
+  return (1 - alpha) * v0 + alpha * v1;
+};
+
 const noteDragged = (dragData) => {
   const noteToDrag = noteElements[dragData.noteID];
   const noteToUpdate = notes[dragData.noteID];
@@ -67,8 +71,13 @@ const addNote = (e) => {
   notes[noteID] = {
     x: posX,
     y: posY,
+    prevX: posX,
+    prevY: posY,
+    destX: posX,
+    destY: posY,
     text: '',
     noteID: noteID,
+    lastUpdate: new Date().getTime(),
   };
   createNote(posX, posY, '', noteID, true);
   client.emit('addNote', notes[noteID]);
