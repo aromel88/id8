@@ -48,9 +48,10 @@ const recieveBoard = (noteData) => {
   });
 };
 
-const setup = (data) => {
+const setup = (data, roomCode) => {
   name = data;
-  ui.hideAll();
+  console.log(roomCode);
+  ui.hideAll(roomCode);
   board.style.display = 'block';
 };
 

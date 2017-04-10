@@ -15,14 +15,13 @@ let roomCode;
 const createSuccess = (data) => {
   roomCode = data.roomCode;
   host.init();
-  board.setup(data.userName);
+  board.setup(data.userName, roomCode);
   ui.updateUserList(data.userList);
-  console.log(roomCode);
 };
 
 const joinSuccess = (data) => {
   roomCode = data.roomCode;
-  board.setup(data.userName);
+  board.setup(data.userName, roomCode);
   ui.updateUserList(data.userList);
 };
 
@@ -37,6 +36,7 @@ const connect = (connectData) => {
   socket.on('noteDragged', board.noteDragged);
   socket.on('noteUpdate', board.noteUpdated);
   socket.on('requestBoard', host.requestBoard);
+  socket.on('updateUserList', ui.updateUserList);
 
   // attempt connection with websocket server
   socket.emit('attemptConnect', connectData);

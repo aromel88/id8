@@ -16,6 +16,8 @@ let sidebar;
 let sidebarBreak;
 let menuButton;
 let menuButtonIcon;
+let copyRoomCodeInput;
+let userList;
 
 // connection logic variables
 let connectionType;
@@ -44,7 +46,8 @@ const hideConnectControls = () => {
   }});
 };
 
-const hideAll = () => {
+const hideAll = (roomCode) => {
+  copyRoomCodeInput.value = roomCode;
   TweenMax.to(landingScreen, 0.5, {
     opacity: 0,
     onComplete: () => {
@@ -63,7 +66,7 @@ const showMenu = () => {
     TweenMax.to(menuButtonIcon, 0.3, { rotation: 180 });
   } else {
     TweenMax.to(menuButtonIcon, 0.3, { rotation: 0 });
-    TweenMax.to(sidebar, 0.3, { left: '-200px' });
+    TweenMax.to(sidebar, 0.3, { left: '-300px' });
   }
 };
 
@@ -78,7 +81,13 @@ const connect = () => {
 };
 
 const updateUserList = (data) => {
-  console.dir(data);
+  userList.innerHTML = '<h1>Users</h1>';
+  data.forEach((user) => {
+    let userElem = document.createElement('li');
+    userElem.classList.add('user');
+    userElem.innerHTML = `<p>${user}</p>`;
+    userList.appendChild(userElem);
+  });
 };
 
 const init = () => {
@@ -106,6 +115,8 @@ const init = () => {
   menuButton = document.querySelector('#menu-button');
   menuButton.addEventListener('click', showMenu);
   menuButtonIcon = menuButton.childNodes[0];
+  copyRoomCodeInput = document.querySelector('#copy-room-code');
+  userList = document.querySelector('#user-list');
 
   roomInput = document.querySelector('#room-input');
   nameInput = document.querySelector('#name-input');

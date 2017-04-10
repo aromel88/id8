@@ -21,6 +21,7 @@ const attemptJoin = (sock, data) => {
     roomCode: data.roomCode,
     userList: room.userList,
   });
+  socket.broadcast.to(socket.roomCode).emit('updateUserList', room.userList);
   room.admin.emit('requestBoard', { userRequesting: socket.name });
 };
 

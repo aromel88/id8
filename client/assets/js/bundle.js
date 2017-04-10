@@ -118,9 +118,10 @@ var recieveBoard = function recieveBoard(noteData) {
   });
 };
 
-var setup = function setup(data) {
+var setup = function setup(data, roomCode) {
   name = data;
-  ui.hideAll();
+  console.log(roomCode);
+  ui.hideAll(roomCode);
   board.style.display = 'block';
 };
 
@@ -209,14 +210,13 @@ var roomCode = void 0;
 var createSuccess = function createSuccess(data) {
   roomCode = data.roomCode;
   host.init();
-  board.setup(data.userName);
+  board.setup(data.userName, roomCode);
   ui.updateUserList(data.userList);
-  console.log(roomCode);
 };
 
 var joinSuccess = function joinSuccess(data) {
   roomCode = data.roomCode;
-  board.setup(data.userName);
+  board.setup(data.userName, roomCode);
   ui.updateUserList(data.userList);
 };
 
@@ -231,6 +231,7 @@ var connect = function connect(connectData) {
   socket.on('noteDragged', board.noteDragged);
   socket.on('noteUpdate', board.noteUpdated);
   socket.on('requestBoard', host.requestBoard);
+  socket.on('updateUserList', ui.updateUserList);
 
   // attempt connection with websocket server
   socket.emit('attemptConnect', connectData);
@@ -275,6 +276,8 @@ var sidebar = void 0;
 var sidebarBreak = void 0;
 var menuButton = void 0;
 var menuButtonIcon = void 0;
+var copyRoomCodeInput = void 0;
+var userList = void 0;
 
 // connection logic variables
 var connectionType = void 0;
@@ -303,7 +306,8 @@ var hideConnectControls = function hideConnectControls() {
     } });
 };
 
-var hideAll = function hideAll() {
+var hideAll = function hideAll(roomCode) {
+  copyRoomCodeInput.value = roomCode;
   TweenMax.to(landingScreen, 0.5, {
     opacity: 0,
     onComplete: function onComplete() {
@@ -322,7 +326,7 @@ var showMenu = function showMenu() {
     TweenMax.to(menuButtonIcon, 0.3, { rotation: 180 });
   } else {
     TweenMax.to(menuButtonIcon, 0.3, { rotation: 0 });
-    TweenMax.to(sidebar, 0.3, { left: '-200px' });
+    TweenMax.to(sidebar, 0.3, { left: '-300px' });
   }
 };
 
@@ -337,7 +341,13 @@ var connect = function connect() {
 };
 
 var updateUserList = function updateUserList(data) {
-  console.dir(data);
+  userList.innerHTML = '<h1>Users</h1>';
+  data.forEach(function (user) {
+    var userElem = document.createElement('li');
+    userElem.classList.add('user');
+    userElem.innerHTML = '<p>' + user + '</p>';
+    userList.appendChild(userElem);
+  });
 };
 
 var init = function init() {
@@ -365,6 +375,8 @@ var init = function init() {
   menuButton = document.querySelector('#menu-button');
   menuButton.addEventListener('click', showMenu);
   menuButtonIcon = menuButton.childNodes[0];
+  copyRoomCodeInput = document.querySelector('#copy-room-code');
+  userList = document.querySelector('#user-list');
 
   roomInput = document.querySelector('#room-input');
   nameInput = document.querySelector('#name-input');
@@ -2507,7 +2519,7 @@ exports = module.exports = __webpack_require__(10)(undefined);
 
 
 // module
-exports.push([module.i, "* {\n  margin: 0;\n  padding: 0; }\n\n*:focus {\n  outline: none; }\n\nbody {\n  width: 100%;\n  height: 100vh;\n  background-color: #4ABDAC;\n  font-family: \"Roboto\", sans-serif; }\n\n/*\n  _landing.scss\n  styles for landing screen\n\n  by Aaron Romel\n*/\n.button, #make-button, #join-button, #connect-button, #back-button {\n  display: block;\n  width: 212px;\n  height: 40px;\n  margin: auto;\n  background-color: #FC4A1A;\n  color: white;\n  box-shadow: 0px 3px 2px #E0E0E0;\n  border: none;\n  border-radius: 3px;\n  font-size: 1.1em;\n  position: absolute;\n  left: 50%;\n  transform: translate(-50%, 0);\n  transition: width 0.15s, height 0.15s, box-shadow 0.15s; }\n  .button:hover, #make-button:hover, #join-button:hover, #connect-button:hover, #back-button:hover {\n    cursor: pointer;\n    box-shadow: 4px 7px 3px #E0E0E0, -4px -2px 3px #E0E0E0;\n    width: 217px;\n    height: 45px; }\n  .button:active, #make-button:active, #join-button:active, #connect-button:active, #back-button:active {\n    box-shadow: 0px 3px 2px #E0E0E0;\n    width: 212px;\n    height: 40px; }\n\n#landing-screen {\n  position: absolute;\n  background-color: white;\n  width: 500px;\n  height: 400px;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%);\n  border-radius: 5px;\n  box-shadow: 0px 7px 5px rgba(0, 0, 0, 0.4); }\n\n#landing-screen img {\n  margin: auto;\n  position: absolute;\n  left: 50%;\n  top: 20px;\n  transform: translate(-50%, 0); }\n\n#landing-controls {\n  position: relative;\n  top: 250px; }\n\n#join-button {\n  top: 55px; }\n\n/* connect controls */\n#connect-controls {\n  opacity: 0;\n  display: none;\n  position: relative;\n  top: 250px; }\n\ninput[type='text'] {\n  display: block;\n  margin: auto;\n  width: 200px;\n  padding: 4px;\n  font-size: 1em;\n  border-radius: 4px;\n  border: 2px solid #E0E0E0;\n  position: relative;\n  margin-bottom: 10px; }\n\n#connect-button {\n  top: 125px; }\n\n#back-button {\n  background-color: #4ABDAC;\n  top: 180px; }\n\n#sidebar {\n  width: 250px;\n  height: 100vh;\n  background-color: rgba(0, 0, 0, 0.7);\n  position: relative;\n  left: -200px;\n  top: -100vh;\n  opacity: 0; }\n\n#sidebar-break {\n  width: 2px;\n  height: 100vh;\n  background-color: #FC4A1A;\n  position: absolute;\n  left: 200px;\n  top: 0px; }\n\n#menu-button {\n  top: 20px;\n  position: absolute;\n  text-align: center;\n  line-height: 30px;\n  left: 200px;\n  width: 30px;\n  height: 30px;\n  padding-left: 10px;\n  padding-right: 10px;\n  color: #4ABDAC; }\n\n#menu-button:hover {\n  background-color: white;\n  cursor: pointer; }\n\n#board {\n  display: none;\n  height: 100vh;\n  width: 100%;\n  overflow: auto; }\n\n.note {\n  width: 100px;\n  height: auto;\n  min-height: 100px;\n  background-color: white;\n  position: absolute;\n  transition: left .1s, top .1s;\n  border-radius: 4px;\n  box-shadow: 0px 4px 2px rgba(0, 0, 0, 0.4); }\n\n.note:hover {\n  opacity: 0.6;\n  cursor: pointer; }\n\n.note:active {\n  opacity: 1;\n  cursor: grab; }\n\n.note textarea {\n  border: none;\n  resize: none;\n  position: relative;\n  top: 5px;\n  left: 5px;\n  font-family: \"Roboto\", sans-serif;\n  font-size: 1em; }\n\n.note p {\n  pointer-events: none;\n  position: relative;\n  top: 5px;\n  left: 5px;\n  width: 90px;\n  height: 90px;\n  word-wrap: normal; }\n\n/*# sourceMappingURL=app.css.map */\n", ""]);
+exports.push([module.i, "* {\n  margin: 0;\n  padding: 0; }\n\n*:focus {\n  outline: none; }\n\nbody {\n  width: 100%;\n  height: 100vh;\n  background-color: #4ABDAC;\n  font-family: \"Roboto\", sans-serif; }\n\n/*\n  _landing.scss\n  styles for landing screen\n\n  by Aaron Romel\n*/\n.button, #make-button, #join-button, #connect-button, #back-button {\n  display: block;\n  width: 212px;\n  height: 40px;\n  margin: auto;\n  background-color: #FC4A1A;\n  color: white;\n  box-shadow: 0px 3px 2px #E0E0E0;\n  border: none;\n  border-radius: 3px;\n  font-size: 1.1em;\n  position: absolute;\n  left: 50%;\n  transform: translate(-50%, 0);\n  transition: width 0.15s, height 0.15s, box-shadow 0.15s; }\n  .button:hover, #make-button:hover, #join-button:hover, #connect-button:hover, #back-button:hover {\n    cursor: pointer;\n    box-shadow: 4px 7px 3px #E0E0E0, -4px -2px 3px #E0E0E0;\n    width: 217px;\n    height: 45px; }\n  .button:active, #make-button:active, #join-button:active, #connect-button:active, #back-button:active {\n    box-shadow: 0px 3px 2px #E0E0E0;\n    width: 212px;\n    height: 40px; }\n\n#landing-screen {\n  position: absolute;\n  background-color: white;\n  width: 500px;\n  height: 400px;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%);\n  border-radius: 5px;\n  box-shadow: 0px 7px 5px rgba(0, 0, 0, 0.4); }\n\n#landing-screen img {\n  margin: auto;\n  position: absolute;\n  left: 50%;\n  top: 20px;\n  transform: translate(-50%, 0); }\n\n#landing-controls {\n  position: relative;\n  top: 250px; }\n\n#join-button {\n  top: 55px; }\n\n/* connect controls */\n#connect-controls {\n  opacity: 0;\n  display: none;\n  position: relative;\n  top: 250px; }\n\ninput[type='text'] {\n  display: block;\n  margin: auto;\n  width: 200px;\n  padding: 4px;\n  font-size: 1em;\n  border-radius: 4px;\n  border: 2px solid #E0E0E0;\n  position: relative;\n  margin-bottom: 10px; }\n\n#copy-room-code {\n  position: relative;\n  top: 75px;\n  left: -50px;\n  text-align: center; }\n\n#connect-button {\n  top: 125px; }\n\n#back-button {\n  background-color: #4ABDAC;\n  top: 180px; }\n\n#sidebar {\n  width: 350px;\n  height: 100vh;\n  background-color: rgba(0, 0, 0, 0.7);\n  position: relative;\n  left: -300px;\n  top: -100vh;\n  opacity: 0;\n  color: white; }\n\n#sidebar p {\n  position: relative;\n  left: 50px; }\n\n#sidebar-break {\n  width: 2px;\n  height: 100vh;\n  background-color: #FC4A1A;\n  position: absolute;\n  left: 200px;\n  top: 0px; }\n\n#menu-button {\n  top: 20px;\n  position: absolute;\n  text-align: center;\n  line-height: 30px;\n  left: 300px;\n  width: 30px;\n  height: 30px;\n  padding-left: 10px;\n  padding-right: 10px;\n  color: #4ABDAC; }\n\n#menu-button:hover {\n  background-color: white;\n  cursor: pointer; }\n\n#user-list {\n  list-style-type: none;\n  position: absolute;\n  top: 130px; }\n\n#board {\n  display: none;\n  height: 100vh;\n  width: 100%;\n  overflow: auto; }\n\n.note {\n  width: 100px;\n  height: auto;\n  min-height: 100px;\n  background-color: white;\n  position: absolute;\n  transition: left .1s, top .1s;\n  border-radius: 4px;\n  box-shadow: 0px 4px 2px rgba(0, 0, 0, 0.4); }\n\n.note:hover {\n  opacity: 0.6;\n  cursor: pointer; }\n\n.note:active {\n  opacity: 1;\n  cursor: grab; }\n\n.note textarea {\n  border: none;\n  resize: none;\n  position: relative;\n  top: 5px;\n  left: 5px;\n  font-family: \"Roboto\", sans-serif;\n  font-size: 1em; }\n\n.note p {\n  pointer-events: none;\n  position: relative;\n  top: 5px;\n  left: 5px;\n  width: 90px;\n  height: 90px;\n  word-wrap: normal; }\n\n/*# sourceMappingURL=app.css.map */\n", ""]);
 
 // exports
 

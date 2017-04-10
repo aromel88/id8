@@ -99,6 +99,13 @@ input[type='text'] {
   margin-bottom: 10px;
 }
 
+#copy-room-code {
+  position: relative;
+  top: 75px;
+  left: -50px;
+  text-align: center;
+}
+
 #connect-button {
   @extend .button;
   top: 125px;
@@ -111,13 +118,18 @@ input[type='text'] {
 }
 
 #sidebar {
-  width: 250px;
+  width: 350px;
   height: 100vh;
   background-color: rgba(0,0,0,0.7);
   position: relative;
-  left: -200px;
+  left: -300px;
   top: -100vh;
   opacity: 0;
+  color: white;
+}
+#sidebar p {
+  position: relative;
+  left: 50px;
 }
 
 #sidebar-break {
@@ -134,7 +146,7 @@ input[type='text'] {
   position: absolute;
   text-align: center;
   line-height: 30px;
-  left: 200px;
+  left: 300px;
   width: 30px;
   height: 30px;
   padding-left: 10px;
@@ -144,4 +156,10 @@ input[type='text'] {
 #menu-button:hover {
   background-color: white;
   cursor: pointer;
+}
+
+#user-list {
+  list-style-type: none;
+  position: absolute;
+  top: 130px;
 }
