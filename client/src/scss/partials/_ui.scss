@@ -114,34 +114,34 @@ input[type='text'] {
   width: 250px;
   height: 100vh;
   background-color: rgba(0,0,0,0.7);
-  position: absolute;
+  position: relative;
   left: -200px;
-  top: 0px;
+  top: -100vh;
   opacity: 0;
 }
 
 #sidebar-break {
   width: 2px;
   height: 100vh;
-  background-color: $dark-gray;
+  background-color: $secondary-color;
   position: absolute;
-  left: 0px;
+  left: 200px;
   top: 0px;
 }
 
-.sidebar-button {
+#menu-button {
+  top: 20px;
   position: absolute;
+  text-align: center;
+  line-height: 30px;
   left: 200px;
   width: 30px;
   height: 30px;
   padding-left: 10px;
   padding-right: 10px;
+  color: $primary-color;
 }
-.sidebar-button:hover {
+#menu-button:hover {
   background-color: white;
   cursor: pointer;
-}
-
-#menu-icon {
-  top: 20px;
 }

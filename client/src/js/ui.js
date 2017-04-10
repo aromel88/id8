@@ -15,6 +15,7 @@ let nameInput;
 let sidebar;
 let sidebarBreak;
 let menuButton;
+let menuButtonIcon;
 
 // connection logic variables
 let connectionType;
@@ -59,9 +60,9 @@ const showMenu = () => {
   menuActive = !menuActive;
   if (menuActive) {
     TweenMax.to(sidebar, 0.3, { left: '0px' });
-    TweenMax.to(sidebarBreak, 0.03, { left: '200px' });
+    TweenMax.to(menuButtonIcon, 0.3, { rotation: 180 });
   } else {
-    TweenMax.to(sidebarBreak, 3.0, { left: '0px' });
+    TweenMax.to(menuButtonIcon, 0.3, { rotation: 0 });
     TweenMax.to(sidebar, 0.3, { left: '-200px' });
   }
 };
@@ -102,8 +103,9 @@ const init = () => {
   connectButton.addEventListener('click', connect);
   backButton = document.querySelector('#back-button');
   backButton.addEventListener('click', hideConnectControls);
-  menuButton = document.querySelector('#menu-icon');
+  menuButton = document.querySelector('#menu-button');
   menuButton.addEventListener('click', showMenu);
+  menuButtonIcon = menuButton.childNodes[0];
 
   roomInput = document.querySelector('#room-input');
   nameInput = document.querySelector('#name-input');
