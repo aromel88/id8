@@ -36,7 +36,7 @@ const requestBoard = (data) => {
 };
 
 const init = () => {
-  setInterval(checkCollisions, 20);
+  setInterval(checkCollisions, 500);
 };
 
 module.exports.init = init;

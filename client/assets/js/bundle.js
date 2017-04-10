@@ -657,7 +657,7 @@ var requestBoard = function requestBoard(data) {
 };
 
 var init = function init() {
-  setInterval(checkCollisions, 20);
+  setInterval(checkCollisions, 500);
 };
 
 module.exports.init = init;
