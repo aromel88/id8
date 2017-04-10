@@ -39,6 +39,14 @@ const mouseDown = (e) => {
   }
 };
 
+const update = () => {
+  if (currentNote) {
+    const theNote = board.notes()[currentNote.noteID];
+    theNote.prevX = theNote.x;
+    theNote.prevY = theNote.y;
+  }
+};
+
 const drag = (e) => {
   e.preventDefault();
   e.stopPropagation();
@@ -47,10 +55,14 @@ const drag = (e) => {
 
   const xDrag = e.clientX - currentNote.offsetWidth/2;
   const yDrag = e.clientY - currentNote.offsetHeight/2;
+  const theNote = board.notes()[currentNote.noteID];
   const dragData = {
     noteID: currentNote.noteID,
-    x: xDrag,
-    y: yDrag,
+    prevX: theNote.prevX,
+    prevY: theNote.prevY,
+    destX: xDrag,
+    destY: yDrag,
+    lastUpdate: new Date().getTime(),
   };
   board.updateNote(dragData);
   client.emit('dragNote', dragData);
@@ -128,6 +140,7 @@ const getCurrentNote = () => { return currentNote; };
 module.exports.Note = Note;
 module.exports.mouseDown = mouseDown;
 module.exports.drag = drag;
+module.exports.update = update;
 module.exports.mouseUp = mouseUp;
 module.exports.setCurrentNote = setCurrentNote;
 module.exports.currentNote = getCurrentNote;

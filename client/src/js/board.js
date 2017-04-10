@@ -39,6 +39,21 @@ const recieveBoard = (noteData) => {
   });
 };
 
+const draw = () => {
+  note.update();
+  Object.keys(notes).forEach((key) => {
+    const theNote = notes[key];
+    if (theNote.alpha < 1) theNote.alpha += 0.05;
+    theNote.x = lerp(theNote.prevX, theNote.destX, theNote.alpha);
+    theNote.y = lerp(theNote.prevY, theNote.destY, theNote.alpha);
+    const noteToDrag = noteElements[key];
+    noteToDrag.style.left = `${theNote.x}px`;
+    noteToDrag.style.top = `${theNote.y}px`;
+  });
+
+  requestAnimationFrame(draw);
+};
+
 const setup = (data, roomCode) => {
   name = data;
   console.log(roomCode);
@@ -78,11 +93,16 @@ const addNote = (e) => {
 
 const updateNote = (dragData) => {
   const noteUpdate = notes[dragData.noteID];
-  const noteDrag = noteElements[dragData.noteID];
-  noteUpdate.x = dragData.x;
-  noteUpdate.y = dragData.y;
-  noteDrag.style.left = `${dragData.x}px`;
-  noteDrag.style.top = `${dragData.y}px`;
+  //const noteDrag = noteElements[dragData.noteID];
+  if (noteUpdate.lastUpdate > dragData.lastUpdate) return;
+
+  noteUpdate.prevX = dragData.prevX;
+  noteUpdate.prevY = dragData.prevY;
+  noteUpdate.destX = dragData.destX;
+  noteUpdate.destY = dragData.destY;
+  noteUpdate.alpha = 0.05;
+  //noteDrag.style.left = `${dragData.x}px`;
+  //noteDrag.style.top = `${dragData.y}px`;
 };
 
 const init = () => {
@@ -93,6 +113,7 @@ const init = () => {
   board.addEventListener('dblclick', addNote);
   notes = {};
   noteElements = {};
+  draw();
 };
 
 const getNotes = () => { return notes; };

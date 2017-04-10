@@ -109,6 +109,21 @@ var recieveBoard = function recieveBoard(noteData) {
   });
 };
 
+var draw = function draw() {
+  note.update();
+  Object.keys(notes).forEach(function (key) {
+    var theNote = notes[key];
+    if (theNote.alpha < 1) theNote.alpha += 0.05;
+    theNote.x = lerp(theNote.prevX, theNote.destX, theNote.alpha);
+    theNote.y = lerp(theNote.prevY, theNote.destY, theNote.alpha);
+    var noteToDrag = noteElements[key];
+    noteToDrag.style.left = theNote.x + 'px';
+    noteToDrag.style.top = theNote.y + 'px';
+  });
+
+  requestAnimationFrame(draw);
+};
+
 var setup = function setup(data, roomCode) {
   name = data;
   console.log(roomCode);
@@ -148,11 +163,16 @@ var addNote = function addNote(e) {
 
 var updateNote = function updateNote(dragData) {
   var noteUpdate = notes[dragData.noteID];
-  var noteDrag = noteElements[dragData.noteID];
-  noteUpdate.x = dragData.x;
-  noteUpdate.y = dragData.y;
-  noteDrag.style.left = dragData.x + 'px';
-  noteDrag.style.top = dragData.y + 'px';
+  //const noteDrag = noteElements[dragData.noteID];
+  if (noteUpdate.lastUpdate > dragData.lastUpdate) return;
+
+  noteUpdate.prevX = dragData.prevX;
+  noteUpdate.prevY = dragData.prevY;
+  noteUpdate.destX = dragData.destX;
+  noteUpdate.destY = dragData.destY;
+  noteUpdate.alpha = 0.05;
+  //noteDrag.style.left = `${dragData.x}px`;
+  //noteDrag.style.top = `${dragData.y}px`;
 };
 
 var init = function init() {
@@ -163,6 +183,7 @@ var init = function init() {
   board.addEventListener('dblclick', addNote);
   notes = {};
   noteElements = {};
+  draw();
 };
 
 var getNotes = function getNotes() {
@@ -453,6 +474,14 @@ var mouseDown = function mouseDown(e) {
   }
 };
 
+var update = function update() {
+  if (currentNote) {
+    var theNote = board.notes()[currentNote.noteID];
+    theNote.prevX = theNote.x;
+    theNote.prevY = theNote.y;
+  }
+};
+
 var drag = function drag(e) {
   e.preventDefault();
   e.stopPropagation();
@@ -461,10 +490,14 @@ var drag = function drag(e) {
 
   var xDrag = e.clientX - currentNote.offsetWidth / 2;
   var yDrag = e.clientY - currentNote.offsetHeight / 2;
+  var theNote = board.notes()[currentNote.noteID];
   var dragData = {
     noteID: currentNote.noteID,
-    x: xDrag,
-    y: yDrag
+    prevX: theNote.prevX,
+    prevY: theNote.prevY,
+    destX: xDrag,
+    destY: yDrag,
+    lastUpdate: new Date().getTime()
   };
   board.updateNote(dragData);
   client.emit('dragNote', dragData);
@@ -546,6 +579,7 @@ var getCurrentNote = function getCurrentNote() {
 module.exports.Note = Note;
 module.exports.mouseDown = mouseDown;
 module.exports.drag = drag;
+module.exports.update = update;
 module.exports.mouseUp = mouseUp;
 module.exports.setCurrentNote = setCurrentNote;
 module.exports.currentNote = getCurrentNote;
