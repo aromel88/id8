@@ -67,6 +67,7 @@ const addNote = (e) => {
     prevY: posY,
     destX: posX,
     destY: posY,
+    alpha: 0,
     text: '',
     noteID: noteID,
     lastUpdate: new Date().getTime(),
