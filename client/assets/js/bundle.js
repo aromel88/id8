@@ -650,7 +650,7 @@ var checkCollisions = function checkCollisions() {
     }
   }
   // if (notesColliding.length > 0) {
-  client.emit('collisions', notesColliding);
+  // client.emit('collisions', notesColliding);
   // }
 };
 
