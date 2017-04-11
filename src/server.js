@@ -27,6 +27,7 @@ const onMsg = (sock) => {
   socket.on('sendBoard', (data) => { board.recieveBoard(socket, data); });
   socket.on('updateNoteText', (data) => { board.updateNoteText(socket, data); });
   socket.on('collisions', (data) => { board.sendCollisions(socket, data); });
+  socket.on('noCollisions', () => { board.noCollisions(socket); });
 };
 
 const onDisconnect = (sock) => {

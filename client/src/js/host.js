@@ -3,6 +3,7 @@ const board = require('./board');
 const client = require('./client');
 
 const NOTE_SIZE = { width: 100, height: 100 };
+let collisionsExist = false;
 
 const collides = (rect1, rect2) => {
   if (rect1.x < rect2.x + NOTE_SIZE.width &&
@@ -28,9 +29,13 @@ const checkCollisions = () => {
       }
     }
   }
-  // if (notesColliding.length > 0) {
-    // client.emit('collisions', notesColliding);
-  // }
+  if (notesColliding.length > 0) {
+    client.emit('collisions', notesColliding);
+    collisionsExist = true;
+  } else if (collisionsExist) {
+    collisionsExist = false;
+    client.emit('noCollisions');
+  }
 
 };
 

@@ -627,6 +627,7 @@ var board = __webpack_require__(0);
 var client = __webpack_require__(1);
 
 var NOTE_SIZE = { width: 100, height: 100 };
+var collisionsExist = false;
 
 var collides = function collides(rect1, rect2) {
   if (rect1.x < rect2.x + NOTE_SIZE.width && rect1.x + NOTE_SIZE.width > rect2.x && rect1.y < rect2.y + NOTE_SIZE.height && NOTE_SIZE.height + rect1.y > rect2.y) {
@@ -649,9 +650,13 @@ var checkCollisions = function checkCollisions() {
       }
     }
   }
-  // if (notesColliding.length > 0) {
-  // client.emit('collisions', notesColliding);
-  // }
+  if (notesColliding.length > 0) {
+    client.emit('collisions', notesColliding);
+    collisionsExist = true;
+  } else if (collisionsExist) {
+    collisionsExist = false;
+    client.emit('noCollisions');
+  }
 };
 
 var requestBoard = function requestBoard(data) {
