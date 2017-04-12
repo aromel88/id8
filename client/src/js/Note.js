@@ -6,6 +6,8 @@ let noStick = false;
 let typing = false;
 let dragging = false;
 let currentNote;
+let deleteButton;
+let dragCount = 0; // allows limiting emits to every x drag events
 
 const stickNote = () => {
   const text = currentNote.childNodes[0];
@@ -52,25 +54,30 @@ const drag = (e) => {
   e.stopPropagation();
   // only drag notes
   if (!dragging || !currentNote) return;
-
-  const xDrag = e.clientX - currentNote.offsetWidth/2;
-  const yDrag = e.clientY - currentNote.offsetHeight/2;
-  const theNote = board.notes()[currentNote.noteID];
-  const dragData = {
-    noteID: currentNote.noteID,
-    prevX: theNote.prevX,
-    prevY: theNote.prevY,
-    destX: xDrag,
-    destY: yDrag,
-    lastUpdate: new Date().getTime(),
-  };
-  board.updateNote(dragData);
-  client.emit('dragNote', dragData);
+  if (dragCount <= 10) {
+    dragCount += 1;
+    const xDrag = e.clientX - currentNote.offsetWidth/2;
+    const yDrag = e.clientY - currentNote.offsetHeight/2;
+    const theNote = board.notes()[currentNote.noteID];
+    const dragData = {
+      noteID: currentNote.noteID,
+      prevX: theNote.prevX,
+      prevY: theNote.prevY,
+      destX: xDrag,
+      destY: yDrag,
+      lastUpdate: new Date().getTime(),
+    };
+    board.updateNote(dragData);
+    client.emit('dragNote', dragData);
+  } else {
+    dragCount = 0;
+  }
 };
 
 const mouseUp = (e) => {
   dragging = false;
   currentNote = undefined;
+  dragCount = 0;
 };
 
 const editNote = (e) => {
@@ -84,6 +91,10 @@ const editNote = (e) => {
   typing = true;
   dragging = false;
   textBox.focus();
+};
+
+const allowDelete = (e) => {
+  deleteButton.style.display = 'block';
 };
 
 const setupTextBox = () => {
@@ -115,6 +126,12 @@ const Note = (posX, posY, text, noteID, creatingNew) => {
   newNote.style.left = `${posX}px`;
   newNote.style.top = `${posY}px`;
   newNote.addEventListener('dblclick', editNote);
+  //newNote.addEventListener('mouseover', allowDelete);
+
+  // deleteButton = document.createElement('div');
+  // deleteButton.classList.add('note-delete-button');
+  // deleteButton.innerHTML = 'x';
+  // newNote.appendChild(deleteButton);
 
   const noteText = document.createElement('p');
   const noteTextBox = setupTextBox();

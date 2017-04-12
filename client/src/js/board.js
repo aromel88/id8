@@ -9,6 +9,7 @@ let name;
 let board;
 let notes;
 let noteElements;
+let initialTip;
 
 const noteUpdated = (noteData) => {
   const noteToUpdate = notes[noteData.noteID];
@@ -51,7 +52,7 @@ const draw = () => {
     noteToDrag.style.top = `${theNote.y}px`;
   });
 
-  requestAnimationFrame(draw);
+  //requestAnimationFrame(draw);
 };
 
 const showCollisions = (collisionData) => {
@@ -68,6 +69,7 @@ const setup = (data, roomCode) => {
   name = data;
   ui.hideAll(roomCode);
   board.style.display = 'block';
+  initialTip.style.display = 'block';
 };
 
 const noteAdded = (data) => {
@@ -76,6 +78,7 @@ const noteAdded = (data) => {
 };
 
 const addNote = (e) => {
+  initialTip.style.display = 'none';
   if (e.target.classList.contains('note')) {
     return;
   }
@@ -122,7 +125,10 @@ const init = () => {
   board.addEventListener('dblclick', addNote);
   notes = {};
   noteElements = {};
-  draw();
+  //draw();
+  setInterval(draw, 30);
+  // show initial tip
+  initialTip = document.querySelector('.tip');
 };
 
 const getNotes = () => { return notes; };

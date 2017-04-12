@@ -39,3 +39,14 @@
   height: 90px;
   word-wrap: normal;
 }
+
+.note-delete-button {
+  width: 10px;
+  height: 10px;
+  border-radius: 10px;
+  text-align: center;
+  line-height: 10px;
+  background-color: #FFFFFF;
+  color: #000000;
+  display: none;
+}

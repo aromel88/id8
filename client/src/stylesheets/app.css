@@ -142,6 +142,18 @@ input[type='text'] {
   top: 130px;
   left: 20px; }
 
+.tip {
+  width: 800px;
+  text-align: center;
+  color: #E0E0E0;
+  border: 2px solid #E0E0E0;
+  border-radius: 4px;
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); }
+
 #board {
   display: none;
   height: 100vh;
@@ -184,5 +196,15 @@ input[type='text'] {
   width: 90px;
   height: 90px;
   word-wrap: normal; }
+
+.note-delete-button {
+  width: 10px;
+  height: 10px;
+  border-radius: 10px;
+  text-align: center;
+  line-height: 10px;
+  background-color: #FFFFFF;
+  color: #000000;
+  display: none; }
 
 /*# sourceMappingURL=app.css.map */
