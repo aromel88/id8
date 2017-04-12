@@ -18,7 +18,6 @@ const collides = (rect1, rect2) => {
 const checkCollisions = () => {
   const notes = board.notes();
   const noteKeys = Object.keys(notes);
-  //const notesColliding = [];
   const collisions = {};
   for (let i = 0; i < noteKeys.length-1; i+=1) {
     const noteA = notes[noteKeys[i]];
@@ -30,9 +29,6 @@ const checkCollisions = () => {
         }
         collisions[`${noteKeys[i]}`].push(noteKeys[j]);
       }
-
-      //notesColliding.push(noteKeys[i]);
-      //notesColliding.push(noteKeys[j]);
     }
   }
   if (Object.keys(collisions).length > 0) {

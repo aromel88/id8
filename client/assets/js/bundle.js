@@ -75,8 +75,8 @@
 
 __webpack_require__(3);
 
-var ui = __webpack_require__(1);
-var client = __webpack_require__(2);
+var ui = __webpack_require__(2);
+var client = __webpack_require__(1);
 var note = __webpack_require__(4);
 
 var NOTE_SIZE = { x: 100, y: 100 };
@@ -122,38 +122,75 @@ var draw = function draw() {
     noteToDrag.style.left = theNote.x + 'px';
     noteToDrag.style.top = theNote.y + 'px';
     if (noteToDrag.isColliding) {
-      noteToDrag.style.backgroundColor = 'red';
+      noteToDrag.style.backgroundColor = '#4ABDAC';
     } else {
       noteToDrag.style.backgroundColor = 'white';
     }
   });
+};
 
-  //requestAnimationFrame(draw);
+var resolveCollisions = function resolveCollisions() {
+  if (collisions) {
+    Object.keys(collisions).forEach(function (colA) {
+      var noteA = notes[colA];
+      var noteAElement = noteElements[colA];
+      var combinedText = notes[colA].text;
+      var collisionsWithKey = collisions[colA];
+      collisionsWithKey.forEach(function (colB) {
+        var noteB = notes[colB];
+        var noteBElement = noteElements[colB];
+        combinedText += " " + noteB.text;
+        delete notes[colB];
+        noteBElement.innerHTML = '';
+        TweenMax.to(noteBElement, 0.3, {
+          width: "0px", height: "0px", onComplete: function onComplete() {
+            noteBElement.parentNode.removeChild(noteBElement);
+            delete noteElements[colB];
+          } });
+      });
+      noteAElement.innerHTML = '';
+      noteA.text = combinedText;
+      TweenMax.to(noteAElement, 0.3, {
+        width: "0px", height: "0px", onComplete: function onComplete() {
+          TweenMax.to(noteAElement, 0.3, { width: "100px", height: "100px",
+            onComplete: function onComplete() {
+              noteAElement.innerHTML = combinedText;
+            } });
+        }
+      });
+    });
+    collisions = undefined;
+    console.dir(notes);
+    console.dir(noteElements);
+    console.dir(collisions);
+  }
 };
 
 var updateCollisions = function updateCollisions(collisionData) {
   // update the saved collision data for later, we'll need it on mouse up
   // to know which notes to combine
   collisions = collisionData;
-  var collidingKeys = [];
-  // grab all the keys that are currently involved in a collision
-  Object.keys(collisions).forEach(function (colA) {
-    collidingKeys.push(colA);
-    var collisionsWithKey = collisions[colA];
-    collisionsWithKey.forEach(function (colB) {
-      collidingKeys.push(colB);
+  if (collisions) {
+    var collidingKeys = [];
+    // grab all the keys that are currently involved in a collision
+    Object.keys(collisions).forEach(function (colA) {
+      collidingKeys.push(colA);
+      var collisionsWithKey = collisions[colA];
+      collisionsWithKey.forEach(function (colB) {
+        collidingKeys.push(colB);
+      });
     });
-  });
 
-  // loop through all the note elements, if their key exist in the collidingKeys
-  // mark them as colliding, else mark them note
-  Object.keys(noteElements).forEach(function (key) {
-    if (collidingKeys.indexOf(key) > -1) {
-      noteElements[key].isColliding = true;
-    } else {
-      noteElements[key].isColliding = false;
-    }
-  });
+    // loop through all the note elements, if their key exist in the collidingKeys
+    // mark them as colliding, else mark them note
+    Object.keys(noteElements).forEach(function (key) {
+      if (collidingKeys.indexOf(key) > -1) {
+        noteElements[key].isColliding = true;
+      } else {
+        noteElements[key].isColliding = false;
+      }
+    });
+  }
 };
 
 var setup = function setup(data, roomCode) {
@@ -212,7 +249,11 @@ var init = function init() {
   board = document.querySelector('#board');
   board.addEventListener('mousedown', note.mouseDown);
   board.addEventListener('mousemove', note.drag);
-  board.addEventListener('mouseup', note.mouseUp);
+  board.addEventListener('mouseup', function () {
+    resolveCollisions();
+    note.mouseUp();
+    client.emit('resolveCollisions');
+  });
   board.addEventListener('dblclick', addNote);
   notes = {};
   noteElements = {};
@@ -238,6 +279,7 @@ module.exports.updateNote = updateNote;
 module.exports.noteUpdated = noteUpdated;
 module.exports.notes = getNotes;
 module.exports.updateCollisions = updateCollisions;
+module.exports.resolveCollisions = resolveCollisions;
 
 /***/ }),
 /* 1 */
@@ -246,7 +288,76 @@ module.exports.updateCollisions = updateCollisions;
 "use strict";
 
 
-var client = __webpack_require__(2);
+/*
+  client.js
+  Module to handle socketIO client functionality
+
+  by Aaron Romel
+*/
+
+var ui = __webpack_require__(2);
+var board = __webpack_require__(0);
+var host = __webpack_require__(6);
+
+var socket = void 0;
+var roomCode = void 0;
+
+var createSuccess = function createSuccess(data) {
+  roomCode = data.roomCode;
+  host.init();
+  board.setup(data.userName, roomCode);
+  ui.updateUserList(data.userList);
+};
+
+var joinSuccess = function joinSuccess(data) {
+  roomCode = data.roomCode;
+  board.setup(data.userName, roomCode);
+  ui.updateUserList(data.userList);
+};
+
+// connect socketio server
+var connect = function connect(connectData) {
+  // connect to socketio server
+  socket = io.connect();
+  socket.on('createSuccess', createSuccess);
+  socket.on('joinSuccess', joinSuccess);
+  socket.on('recieveBoard', board.recieveBoard);
+  socket.on('noteAdded', board.noteAdded);
+  socket.on('noteDragged', board.updateNote);
+  socket.on('noteUpdate', board.noteUpdated);
+  socket.on('requestBoard', host.requestBoard);
+  socket.on('updateUserList', ui.updateUserList);
+  socket.on('updateCollisions', board.updateCollisions);
+  socket.on('noCollisions', board.updateCollisions);
+  socket.on('resolveCollisions', board.resolveCollisions);
+
+  // attempt connection with websocket server
+  socket.emit('attemptConnect', connectData);
+};
+
+// allow other modules to emit data to server
+var emit = function emit(type, data) {
+  socket.emit(type, data);
+};
+
+// disconnect from socket server
+var disconnect = function disconnect() {
+  socket.disconnect();
+  socket = undefined;
+};
+
+module.exports.connect = connect;
+module.exports.emit = emit;
+module.exports.disconnect = disconnect;
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var client = __webpack_require__(1);
 var board = __webpack_require__(0);
 
 // DOM elements
@@ -374,73 +485,6 @@ module.exports.hideAll = hideAll;
 module.exports.updateUserList = updateUserList;
 
 /***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-/*
-  client.js
-  Module to handle socketIO client functionality
-
-  by Aaron Romel
-*/
-
-var ui = __webpack_require__(1);
-var board = __webpack_require__(0);
-var host = __webpack_require__(6);
-
-var socket = void 0;
-var roomCode = void 0;
-
-var createSuccess = function createSuccess(data) {
-  roomCode = data.roomCode;
-  host.init();
-  board.setup(data.userName, roomCode);
-  ui.updateUserList(data.userList);
-};
-
-var joinSuccess = function joinSuccess(data) {
-  roomCode = data.roomCode;
-  board.setup(data.userName, roomCode);
-  ui.updateUserList(data.userList);
-};
-
-// connect socketio server
-var connect = function connect(connectData) {
-  // connect to socketio server
-  socket = io.connect();
-  socket.on('createSuccess', createSuccess);
-  socket.on('joinSuccess', joinSuccess);
-  socket.on('recieveBoard', board.recieveBoard);
-  socket.on('noteAdded', board.noteAdded);
-  socket.on('noteDragged', board.updateNote);
-  socket.on('noteUpdate', board.noteUpdated);
-  socket.on('requestBoard', host.requestBoard);
-  socket.on('updateUserList', ui.updateUserList);
-  socket.on('updateCollisions', board.updateCollisions);
-
-  // attempt connection with websocket server
-  socket.emit('attemptConnect', connectData);
-};
-
-// allow other modules to emit data to server
-var emit = function emit(type, data) {
-  socket.emit(type, data);
-};
-
-// disconnect from socket server
-var disconnect = function disconnect() {
-  socket.disconnect();
-  socket = undefined;
-};
-
-module.exports.connect = connect;
-module.exports.emit = emit;
-module.exports.disconnect = disconnect;
-
-/***/ }),
 /* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -473,7 +517,7 @@ if(false) {
 "use strict";
 
 
-var client = __webpack_require__(2);
+var client = __webpack_require__(1);
 var board = __webpack_require__(0);
 
 var noStick = false;
@@ -515,6 +559,7 @@ var mouseDown = function mouseDown(e) {
 };
 
 var update = function update() {
+  console.dir(currentNote);
   if (currentNote) {
     var theNote = board.notes()[currentNote.noteID];
     theNote.prevX = theNote.x;
@@ -573,6 +618,9 @@ var allowDelete = function allowDelete(e) {
 var setupTextBox = function setupTextBox() {
   var noteTextBox = document.createElement('textarea');
   noteTextBox.addEventListener('input', setNoteHeight);
+  noteTextBox.addEventListener('focusout', function () {
+    currentNote = undefined;
+  });
   noteTextBox.addEventListener('keyup', function (e) {
     if (e.keyCode === 16) {
       noStick = false;
@@ -615,11 +663,11 @@ var Note = function Note(posX, posY, text, noteID, creatingNew) {
     noteText.style.display = 'none';
     typing = true;
     noteTextBox.focus();
+    currentNote = newNote;
   } else {
     noteTextBox.style.display = 'none';
     noteText.innerHTML = text;
   }
-  currentNote = newNote;
 
   return newNote;
 };
@@ -648,7 +696,7 @@ module.exports.currentNote = getCurrentNote;
 
 __webpack_require__(3);
 
-var ui = __webpack_require__(1);
+var ui = __webpack_require__(2);
 //const client = require('./client');
 //const host = require('./host');
 var board = __webpack_require__(0);
@@ -668,7 +716,7 @@ window.addEventListener('load', init);
 
 
 var board = __webpack_require__(0);
-var client = __webpack_require__(2);
+var client = __webpack_require__(1);
 
 var NOTE_SIZE = { width: 100, height: 100 };
 var collisionsExist = false;
@@ -683,7 +731,6 @@ var collides = function collides(rect1, rect2) {
 var checkCollisions = function checkCollisions() {
   var notes = board.notes();
   var noteKeys = Object.keys(notes);
-  //const notesColliding = [];
   var collisions = {};
   for (var i = 0; i < noteKeys.length - 1; i += 1) {
     var noteA = notes[noteKeys[i]];
@@ -695,9 +742,6 @@ var checkCollisions = function checkCollisions() {
         }
         collisions['' + noteKeys[i]].push(noteKeys[j]);
       }
-
-      //notesColliding.push(noteKeys[i]);
-      //notesColliding.push(noteKeys[j]);
     }
   }
   if (Object.keys(collisions).length > 0) {

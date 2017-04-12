@@ -42,6 +42,7 @@ const mouseDown = (e) => {
 };
 
 const update = () => {
+  console.dir(currentNote);
   if (currentNote) {
     const theNote = board.notes()[currentNote.noteID];
     theNote.prevX = theNote.x;
@@ -100,6 +101,9 @@ const allowDelete = (e) => {
 const setupTextBox = () => {
   const noteTextBox = document.createElement('textarea');
   noteTextBox.addEventListener('input', setNoteHeight);
+  noteTextBox.addEventListener('focusout', () => {
+    currentNote = undefined;
+  });
   noteTextBox.addEventListener('keyup', (e) => {
     if (e.keyCode === 16) {
       noStick = false;
@@ -142,11 +146,11 @@ const Note = (posX, posY, text, noteID, creatingNew) => {
     noteText.style.display = 'none';
     typing = true;
     noteTextBox.focus();
+    currentNote = newNote;
   } else {
     noteTextBox.style.display = 'none';
     noteText.innerHTML = text;
   }
-  currentNote = newNote;
 
   return newNote;
 }

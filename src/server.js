@@ -28,6 +28,9 @@ const onMsg = (sock) => {
   socket.on('updateNoteText', (data) => { board.updateNoteText(socket, data); });
   socket.on('collisions', (data) => { board.sendCollisions(socket, data); });
   socket.on('noCollisions', () => { board.noCollisions(socket); });
+  socket.on('resolveCollisions', () => {
+    socket.broadcast.to(socket.roomCode).emit('resolveCollisions');
+  })
 };
 
 const onDisconnect = (sock) => {

@@ -52,38 +52,76 @@ const draw = () => {
     noteToDrag.style.left = `${theNote.x}px`;
     noteToDrag.style.top = `${theNote.y}px`;
     if (noteToDrag.isColliding) {
-      noteToDrag.style.backgroundColor = 'red';
+      noteToDrag.style.backgroundColor = '#4ABDAC';
     } else {
       noteToDrag.style.backgroundColor = 'white';
     }
   });
+};
 
-  //requestAnimationFrame(draw);
+const resolveCollisions = () => {
+  if (collisions) {
+    Object.keys(collisions).forEach((colA) => {
+      const noteA = notes[colA];
+      const noteAElement = noteElements[colA];
+      let combinedText = notes[colA].text;
+      const collisionsWithKey = collisions[colA];
+      collisionsWithKey.forEach((colB) => {
+        const noteB = notes[colB];
+        const noteBElement = noteElements[colB];
+        combinedText += " " + noteB.text;
+        delete notes[colB];
+        noteBElement.innerHTML = '';
+        TweenMax.to(noteBElement, 0.3, {
+          width: "0px", height: "0px", onComplete: () => {
+              noteBElement.parentNode.removeChild(noteBElement)
+              delete noteElements[colB];
+          }});
+      });
+      noteAElement.innerHTML = '';
+      noteA.text = combinedText;
+      TweenMax.to(noteAElement, 0.3, {
+        width: "0px", height: "0px", onComplete: () => {
+          TweenMax.to(noteAElement, 0.3, { width: "100px", height: "100px",
+            onComplete: () => {
+              noteAElement.innerHTML = combinedText;
+          }});
+        }
+      });
+    });
+    collisions = undefined;
+    console.dir(notes);
+    console.dir(noteElements);
+    console.dir(collisions);
+  }
+
 };
 
 const updateCollisions = (collisionData) => {
     // update the saved collision data for later, we'll need it on mouse up
     // to know which notes to combine
     collisions = collisionData;
-    const collidingKeys = [];
-    // grab all the keys that are currently involved in a collision
-    Object.keys(collisions).forEach((colA) => {
-      collidingKeys.push(colA);
-      const collisionsWithKey = collisions[colA];
-      collisionsWithKey.forEach((colB) => {
-        collidingKeys.push(colB);
+    if (collisions) {
+      const collidingKeys = [];
+      // grab all the keys that are currently involved in a collision
+      Object.keys(collisions).forEach((colA) => {
+        collidingKeys.push(colA);
+        const collisionsWithKey = collisions[colA];
+        collisionsWithKey.forEach((colB) => {
+          collidingKeys.push(colB);
+        });
       });
-    });
 
-    // loop through all the note elements, if their key exist in the collidingKeys
-    // mark them as colliding, else mark them note
-    Object.keys(noteElements).forEach((key) => {
-      if (collidingKeys.indexOf(key) > -1) {
-        noteElements[key].isColliding = true;
-      } else {
-        noteElements[key].isColliding = false;
-      }
-    });
+      // loop through all the note elements, if their key exist in the collidingKeys
+      // mark them as colliding, else mark them note
+      Object.keys(noteElements).forEach((key) => {
+        if (collidingKeys.indexOf(key) > -1) {
+          noteElements[key].isColliding = true;
+        } else {
+          noteElements[key].isColliding = false;
+        }
+      });
+    }
 };
 
 const setup = (data, roomCode) => {
@@ -142,7 +180,11 @@ const init = () => {
   board = document.querySelector('#board');
   board.addEventListener('mousedown', note.mouseDown);
   board.addEventListener('mousemove', note.drag);
-  board.addEventListener('mouseup', note.mouseUp);
+  board.addEventListener('mouseup', () => {
+    resolveCollisions();
+    note.mouseUp();
+    client.emit('resolveCollisions');
+  });
   board.addEventListener('dblclick', addNote);
   notes = {};
   noteElements = {};
@@ -164,3 +206,4 @@ module.exports.updateNote = updateNote;
 module.exports.noteUpdated = noteUpdated;
 module.exports.notes = getNotes;
 module.exports.updateCollisions = updateCollisions;
+module.exports.resolveCollisions = resolveCollisions;
