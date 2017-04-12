@@ -37,7 +37,7 @@ const connect = (connectData) => {
   socket.on('noteUpdate', board.noteUpdated);
   socket.on('requestBoard', host.requestBoard);
   socket.on('updateUserList', ui.updateUserList);
-  socket.on('updateCollisions', board.showCollisions);
+  socket.on('updateCollisions', board.updateCollisions);
 
   // attempt connection with websocket server
   socket.emit('attemptConnect', connectData);

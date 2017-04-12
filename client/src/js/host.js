@@ -18,19 +18,25 @@ const collides = (rect1, rect2) => {
 const checkCollisions = () => {
   const notes = board.notes();
   const noteKeys = Object.keys(notes);
-  const notesColliding = [];
+  //const notesColliding = [];
+  const collisions = {};
   for (let i = 0; i < noteKeys.length-1; i+=1) {
     const noteA = notes[noteKeys[i]];
     for (let j = i+1; j < noteKeys.length; j+=1) {
       const noteB = notes[noteKeys[j]];
       if (collides(noteA, noteB)) {
-        notesColliding.push(noteKeys[i]);
-        notesColliding.push(noteKeys[j]);
+        if (!collisions[`${noteKeys[i]}`]) {
+          collisions[`${noteKeys[i]}`] = [];
+        }
+        collisions[`${noteKeys[i]}`].push(noteKeys[j]);
       }
+
+      //notesColliding.push(noteKeys[i]);
+      //notesColliding.push(noteKeys[j]);
     }
   }
-  if (notesColliding.length > 0) {
-    client.emit('collisions', notesColliding);
+  if (Object.keys(collisions).length > 0) {
+    client.emit('collisions', collisions);
     collisionsExist = true;
   } else if (collisionsExist) {
     collisionsExist = false;

@@ -10,6 +10,7 @@ let board;
 let notes;
 let noteElements;
 let initialTip;
+let collisions;
 
 const noteUpdated = (noteData) => {
   const noteToUpdate = notes[noteData.noteID];
@@ -50,19 +51,39 @@ const draw = () => {
     const noteToDrag = noteElements[key];
     noteToDrag.style.left = `${theNote.x}px`;
     noteToDrag.style.top = `${theNote.y}px`;
+    if (noteToDrag.isColliding) {
+      noteToDrag.style.backgroundColor = 'red';
+    } else {
+      noteToDrag.style.backgroundColor = 'white';
+    }
   });
 
   //requestAnimationFrame(draw);
 };
 
-const showCollisions = (collisionData) => {
-  Object.keys(noteElements).forEach((key) => {
-    if (collisionData.indexOf(key) > -1) {
-      noteElements[key].style.backgroundColor = 'red';
-    } else {
-      noteElements[key].style.backgroundColor = 'white';
-    }
-  });
+const updateCollisions = (collisionData) => {
+    // update the saved collision data for later, we'll need it on mouse up
+    // to know which notes to combine
+    collisions = collisionData;
+    const collidingKeys = [];
+    // grab all the keys that are currently involved in a collision
+    Object.keys(collisions).forEach((colA) => {
+      collidingKeys.push(colA);
+      const collisionsWithKey = collisions[colA];
+      collisionsWithKey.forEach((colB) => {
+        collidingKeys.push(colB);
+      });
+    });
+
+    // loop through all the note elements, if their key exist in the collidingKeys
+    // mark them as colliding, else mark them note
+    Object.keys(noteElements).forEach((key) => {
+      if (collidingKeys.indexOf(key) > -1) {
+        noteElements[key].isColliding = true;
+      } else {
+        noteElements[key].isColliding = false;
+      }
+    });
 };
 
 const setup = (data, roomCode) => {
@@ -142,4 +163,4 @@ module.exports.noteAdded = noteAdded;
 module.exports.updateNote = updateNote;
 module.exports.noteUpdated = noteUpdated;
 module.exports.notes = getNotes;
-module.exports.showCollisions = showCollisions;
+module.exports.updateCollisions = updateCollisions;
