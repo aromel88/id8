@@ -598,7 +598,6 @@ var mouseDown = function mouseDown(e) {
 };
 
 var update = function update() {
-  console.dir(currentNote);
   if (currentNote) {
     var theNote = board.notes()[currentNote.noteID];
     theNote.prevX = theNote.x;
@@ -669,7 +668,6 @@ var setupTextBox = function setupTextBox() {
     if (e.keyCode === 16) {
       noStick = true;
     } else if (e.keyCode === 13 && !noStick) {
-      console.log('stick');
       stickNote();
     }
   });
@@ -705,7 +703,7 @@ var Note = function Note(posX, posY, text, noteID, creatingNew) {
     currentNote = newNote;
   } else {
     noteTextBox.style.display = 'none';
-    noteText.innerHTML = 'text';
+    noteText.innerHTML = text;
   }
 
   return newNote;

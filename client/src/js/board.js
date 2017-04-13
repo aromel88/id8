@@ -77,7 +77,6 @@ const resolveCollisionKey = (key) => {
       delete noteElements[key];
     }
   });
-
 };
 
 const resolveCollisions = () => {

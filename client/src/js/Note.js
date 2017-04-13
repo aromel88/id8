@@ -42,7 +42,6 @@ const mouseDown = (e) => {
 };
 
 const update = () => {
-  console.dir(currentNote);
   if (currentNote) {
     const theNote = board.notes()[currentNote.noteID];
     theNote.prevX = theNote.x;
@@ -113,7 +112,6 @@ const setupTextBox = () => {
     if (e.keyCode === 16) {
       noStick = true;
     } else if (e.keyCode === 13 && !noStick) {
-      console.log('stick');
       stickNote();
     }
   });
@@ -149,7 +147,7 @@ const Note = (posX, posY, text, noteID, creatingNew) => {
     currentNote = newNote;
   } else {
     noteTextBox.style.display = 'none';
-    noteText.innerHTML = 'text';
+    noteText.innerHTML = text;
   }
 
   return newNote;
