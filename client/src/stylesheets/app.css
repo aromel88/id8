@@ -195,7 +195,7 @@ input[type='text'] {
   left: 5px;
   width: 90px;
   height: 90px;
-  word-wrap: normal; }
+  word-wrap: break-word; }
 
 .note-delete-button {
   width: 10px;

@@ -87,6 +87,7 @@ var notes = void 0;
 var noteElements = void 0;
 var initialTip = void 0;
 var collisions = void 0;
+var combinedText = void 0;
 
 var noteUpdated = function noteUpdated(noteData) {
   var noteToUpdate = notes[noteData.noteID];
@@ -129,42 +130,80 @@ var draw = function draw() {
   });
 };
 
+var resolveCollisionKey = function resolveCollisionKey(key) {
+  if (collisions[key]) {
+    var collisionsWithKey = collisions[key];
+    collisionsWithKey.forEach(function (cwk) {
+      resolveCollisionKey(cwk);
+    });
+  }
+  var theNote = notes[key];
+  var noteElem = noteElements[key];
+  combinedText += ' ' + theNote.text;
+  TweenMax.to(noteElem, 0.3, {
+    width: '0px', height: '0px', onComplete: function onComplete() {
+      noteElem.parentNode.removeChild(noteElem);
+      delete notes[key];
+      delete noteElements[key];
+    }
+  });
+};
+
 var resolveCollisions = function resolveCollisions() {
   if (collisions) {
-    Object.keys(collisions).forEach(function (colA) {
-      var noteA = notes[colA];
-      var noteAElement = noteElements[colA];
-      var combinedText = notes[colA].text;
-      var collisionsWithKey = collisions[colA];
-      collisionsWithKey.forEach(function (colB) {
-        var noteB = notes[colB];
-        var noteBElement = noteElements[colB];
-        combinedText += " " + noteB.text;
-        delete notes[colB];
-        noteBElement.innerHTML = '';
-        TweenMax.to(noteBElement, 0.3, {
-          width: "0px", height: "0px", onComplete: function onComplete() {
-            noteBElement.parentNode.removeChild(noteBElement);
-            delete noteElements[colB];
-          } });
-      });
-      noteAElement.innerHTML = '';
-      noteA.text = combinedText;
-      TweenMax.to(noteAElement, 0.3, {
-        width: "0px", height: "0px", onComplete: function onComplete() {
-          TweenMax.to(noteAElement, 0.3, { width: "100px", height: "100px",
-            onComplete: function onComplete() {
-              noteAElement.innerHTML = combinedText;
-            } });
+    Object.keys(collisions).forEach(function (key) {
+      combinedText = '';
+      if (notes[key]) {
+        resolveCollisionKey(key);
+      }
+      notes[key].text = combinedText;
+      var noteElem = noteElements[key];
+      var noteText = noteElem.childNodes[0];
+      noteText.innerHTML = '';
+      TweenMax.to(noteElem, 0.3, {
+        width: '0px', height: '0px', onComplete: function onComplete() {
+          noteText.innerHTML = combinedText;
+          TweenMax.to(noteElem, 0.3, { width: '100px', height: '100px' });
         }
       });
     });
     collisions = undefined;
-    console.dir(notes);
-    console.dir(noteElements);
-    console.dir(collisions);
   }
 };
+
+// const resolveCollisions = () => {
+//   if (collisions) {
+//     Object.keys(collisions).forEach((colA) => {
+//       const noteA = notes[colA];
+//       const noteAElement = noteElements[colA];
+//       let combinedText = notes[colA].text;
+//       const collisionsWithKey = collisions[colA];
+//       collisionsWithKey.forEach((colB) => {
+//         const noteB = notes[colB];
+//         const noteBElement = noteElements[colB];
+//         combinedText += " " + noteB.text;
+//         delete notes[colB];
+//         noteBElement.innerHTML = '';
+//         TweenMax.to(noteBElement, 0.3, {
+//           width: "0px", height: "0px", onComplete: () => {
+//               noteBElement.parentNode.removeChild(noteBElement)
+//               delete noteElements[colB];
+//           }});
+//       });
+//       noteAElement.innerHTML = '';
+//       noteA.text = combinedText;
+//       TweenMax.to(noteAElement, 0.3, {
+//         width: "0px", height: "0px", onComplete: () => {
+//           TweenMax.to(noteAElement, 0.3, { width: "100px", height: "100px",
+//             onComplete: () => {
+//               noteAElement.innerHTML = combinedText;
+//           }});
+//         }
+//       });
+//     });
+//     collisions = undefined;
+//   }
+// };
 
 var updateCollisions = function updateCollisions(collisionData) {
   // update the saved collision data for later, we'll need it on mouse up
@@ -666,7 +705,7 @@ var Note = function Note(posX, posY, text, noteID, creatingNew) {
     currentNote = newNote;
   } else {
     noteTextBox.style.display = 'none';
-    noteText.innerHTML = text;
+    noteText.innerHTML = 'text';
   }
 
   return newNote;
@@ -2691,7 +2730,7 @@ exports = module.exports = __webpack_require__(10)(undefined);
 
 
 // module
-exports.push([module.i, "* {\n  margin: 0;\n  padding: 0; }\n\n*:focus {\n  outline: none; }\n\nbody {\n  width: 100%;\n  height: 100vh;\n  background-color: #4ABDAC;\n  font-family: \"Roboto\", sans-serif; }\n\n/*\n  _landing.scss\n  styles for landing screen\n\n  by Aaron Romel\n*/\n.button, #make-button, #join-button, #connect-button, #back-button {\n  display: block;\n  width: 212px;\n  height: 40px;\n  margin: auto;\n  background-color: #FC4A1A;\n  color: white;\n  box-shadow: 0px 3px 2px #E0E0E0;\n  border: none;\n  border-radius: 3px;\n  font-size: 1.1em;\n  position: absolute;\n  left: 50%;\n  transform: translate(-50%, 0);\n  transition: width 0.15s, height 0.15s, box-shadow 0.15s; }\n  .button:hover, #make-button:hover, #join-button:hover, #connect-button:hover, #back-button:hover {\n    cursor: pointer;\n    box-shadow: 4px 7px 3px #E0E0E0, -4px -2px 3px #E0E0E0;\n    width: 217px;\n    height: 45px; }\n  .button:active, #make-button:active, #join-button:active, #connect-button:active, #back-button:active {\n    box-shadow: 0px 3px 2px #E0E0E0;\n    width: 212px;\n    height: 40px; }\n\n#landing-screen {\n  position: absolute;\n  background-color: white;\n  width: 500px;\n  height: 400px;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%);\n  border-radius: 5px;\n  box-shadow: 0px 7px 5px rgba(0, 0, 0, 0.4); }\n\n#landing-screen img {\n  margin: auto;\n  position: absolute;\n  left: 50%;\n  top: 20px;\n  transform: translate(-50%, 0); }\n\n#landing-controls {\n  position: relative;\n  top: 250px; }\n\n#join-button {\n  top: 55px; }\n\n/* connect controls */\n#connect-controls {\n  opacity: 0;\n  display: none;\n  position: relative;\n  top: 250px; }\n\ninput[type='text'] {\n  display: block;\n  margin: auto;\n  width: 200px;\n  padding: 4px;\n  font-size: 1em;\n  border-radius: 4px;\n  border: 2px solid #E0E0E0;\n  position: relative;\n  margin-bottom: 10px; }\n\n#copy-room-code {\n  position: relative;\n  top: 75px;\n  left: -50px;\n  text-align: center; }\n\n#connect-button {\n  top: 125px; }\n\n#back-button {\n  background-color: #4ABDAC;\n  top: 180px; }\n\n#sidebar {\n  width: 350px;\n  height: 100vh;\n  background-color: rgba(0, 0, 0, 0.7);\n  position: relative;\n  left: -300px;\n  top: -100vh;\n  opacity: 0;\n  color: white; }\n\n#sidebar p {\n  position: relative;\n  left: 50px; }\n\n#sidebar-break {\n  width: 2px;\n  height: 100vh;\n  background-color: #FC4A1A;\n  position: absolute;\n  left: 300px;\n  top: 0px; }\n\n#menu-button {\n  top: 20px;\n  position: absolute;\n  text-align: center;\n  line-height: 30px;\n  left: 300px;\n  width: 30px;\n  height: 30px;\n  padding-left: 10px;\n  padding-right: 10px;\n  color: #4ABDAC; }\n\n#menu-button:hover {\n  background-color: white;\n  cursor: pointer; }\n\n#user-list {\n  list-style-type: none;\n  position: absolute;\n  top: 130px;\n  left: 20px; }\n\n.tip {\n  width: 800px;\n  text-align: center;\n  color: #E0E0E0;\n  border: 2px solid #E0E0E0;\n  border-radius: 4px;\n  display: none;\n  position: absolute;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%); }\n\n#board {\n  display: none;\n  height: 100vh;\n  width: 100%;\n  overflow: auto; }\n\n.note {\n  width: 100px;\n  height: auto;\n  min-height: 100px;\n  background-color: white;\n  position: absolute;\n  transition: left .1s, top .1s;\n  border-radius: 4px;\n  box-shadow: 0px 4px 2px rgba(0, 0, 0, 0.4); }\n\n.note:hover {\n  opacity: 0.6;\n  cursor: pointer; }\n\n.note:active {\n  opacity: 1;\n  cursor: grab; }\n\n.note textarea {\n  border: none;\n  resize: none;\n  position: relative;\n  top: 5px;\n  left: 5px;\n  font-family: \"Roboto\", sans-serif;\n  font-size: 1em;\n  background-color: transparent; }\n\n.note p {\n  pointer-events: none;\n  position: relative;\n  top: 5px;\n  left: 5px;\n  width: 90px;\n  height: 90px;\n  word-wrap: normal; }\n\n.note-delete-button {\n  width: 10px;\n  height: 10px;\n  border-radius: 10px;\n  text-align: center;\n  line-height: 10px;\n  background-color: #FFFFFF;\n  color: #000000;\n  display: none; }\n\n/*# sourceMappingURL=app.css.map */\n", ""]);
+exports.push([module.i, "* {\n  margin: 0;\n  padding: 0; }\n\n*:focus {\n  outline: none; }\n\nbody {\n  width: 100%;\n  height: 100vh;\n  background-color: #4ABDAC;\n  font-family: \"Roboto\", sans-serif; }\n\n/*\n  _landing.scss\n  styles for landing screen\n\n  by Aaron Romel\n*/\n.button, #make-button, #join-button, #connect-button, #back-button {\n  display: block;\n  width: 212px;\n  height: 40px;\n  margin: auto;\n  background-color: #FC4A1A;\n  color: white;\n  box-shadow: 0px 3px 2px #E0E0E0;\n  border: none;\n  border-radius: 3px;\n  font-size: 1.1em;\n  position: absolute;\n  left: 50%;\n  transform: translate(-50%, 0);\n  transition: width 0.15s, height 0.15s, box-shadow 0.15s; }\n  .button:hover, #make-button:hover, #join-button:hover, #connect-button:hover, #back-button:hover {\n    cursor: pointer;\n    box-shadow: 4px 7px 3px #E0E0E0, -4px -2px 3px #E0E0E0;\n    width: 217px;\n    height: 45px; }\n  .button:active, #make-button:active, #join-button:active, #connect-button:active, #back-button:active {\n    box-shadow: 0px 3px 2px #E0E0E0;\n    width: 212px;\n    height: 40px; }\n\n#landing-screen {\n  position: absolute;\n  background-color: white;\n  width: 500px;\n  height: 400px;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%);\n  border-radius: 5px;\n  box-shadow: 0px 7px 5px rgba(0, 0, 0, 0.4); }\n\n#landing-screen img {\n  margin: auto;\n  position: absolute;\n  left: 50%;\n  top: 20px;\n  transform: translate(-50%, 0); }\n\n#landing-controls {\n  position: relative;\n  top: 250px; }\n\n#join-button {\n  top: 55px; }\n\n/* connect controls */\n#connect-controls {\n  opacity: 0;\n  display: none;\n  position: relative;\n  top: 250px; }\n\ninput[type='text'] {\n  display: block;\n  margin: auto;\n  width: 200px;\n  padding: 4px;\n  font-size: 1em;\n  border-radius: 4px;\n  border: 2px solid #E0E0E0;\n  position: relative;\n  margin-bottom: 10px; }\n\n#copy-room-code {\n  position: relative;\n  top: 75px;\n  left: -50px;\n  text-align: center; }\n\n#connect-button {\n  top: 125px; }\n\n#back-button {\n  background-color: #4ABDAC;\n  top: 180px; }\n\n#sidebar {\n  width: 350px;\n  height: 100vh;\n  background-color: rgba(0, 0, 0, 0.7);\n  position: relative;\n  left: -300px;\n  top: -100vh;\n  opacity: 0;\n  color: white; }\n\n#sidebar p {\n  position: relative;\n  left: 50px; }\n\n#sidebar-break {\n  width: 2px;\n  height: 100vh;\n  background-color: #FC4A1A;\n  position: absolute;\n  left: 300px;\n  top: 0px; }\n\n#menu-button {\n  top: 20px;\n  position: absolute;\n  text-align: center;\n  line-height: 30px;\n  left: 300px;\n  width: 30px;\n  height: 30px;\n  padding-left: 10px;\n  padding-right: 10px;\n  color: #4ABDAC; }\n\n#menu-button:hover {\n  background-color: white;\n  cursor: pointer; }\n\n#user-list {\n  list-style-type: none;\n  position: absolute;\n  top: 130px;\n  left: 20px; }\n\n.tip {\n  width: 800px;\n  text-align: center;\n  color: #E0E0E0;\n  border: 2px solid #E0E0E0;\n  border-radius: 4px;\n  display: none;\n  position: absolute;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%); }\n\n#board {\n  display: none;\n  height: 100vh;\n  width: 100%;\n  overflow: auto; }\n\n.note {\n  width: 100px;\n  height: auto;\n  min-height: 100px;\n  background-color: white;\n  position: absolute;\n  transition: left .1s, top .1s;\n  border-radius: 4px;\n  box-shadow: 0px 4px 2px rgba(0, 0, 0, 0.4); }\n\n.note:hover {\n  opacity: 0.6;\n  cursor: pointer; }\n\n.note:active {\n  opacity: 1;\n  cursor: grab; }\n\n.note textarea {\n  border: none;\n  resize: none;\n  position: relative;\n  top: 5px;\n  left: 5px;\n  font-family: \"Roboto\", sans-serif;\n  font-size: 1em;\n  background-color: transparent; }\n\n.note p {\n  pointer-events: none;\n  position: relative;\n  top: 5px;\n  left: 5px;\n  width: 90px;\n  height: 90px;\n  word-wrap: break-word; }\n\n.note-delete-button {\n  width: 10px;\n  height: 10px;\n  border-radius: 10px;\n  text-align: center;\n  line-height: 10px;\n  background-color: #FFFFFF;\n  color: #000000;\n  display: none; }\n\n/*# sourceMappingURL=app.css.map */\n", ""]);
 
 // exports
 

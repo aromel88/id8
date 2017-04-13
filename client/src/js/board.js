@@ -11,6 +11,7 @@ let notes;
 let noteElements;
 let initialTip;
 let collisions;
+let combinedText;
 
 const noteUpdated = (noteData) => {
   const noteToUpdate = notes[noteData.noteID];
@@ -59,43 +60,81 @@ const draw = () => {
   });
 };
 
+const resolveCollisionKey = (key) => {
+  if (collisions[key]) {
+    const collisionsWithKey = collisions[key];
+    collisionsWithKey.forEach((cwk) => {
+      resolveCollisionKey(cwk);
+    });
+  }
+  const theNote = notes[key];
+  const noteElem = noteElements[key];
+  combinedText += ' ' + theNote.text;
+  TweenMax.to(noteElem, 0.3, {
+    width: '0px', height: '0px', onComplete: () => {
+      noteElem.parentNode.removeChild(noteElem);
+      delete notes[key];
+      delete noteElements[key];
+    }
+  });
+
+};
+
 const resolveCollisions = () => {
   if (collisions) {
-    Object.keys(collisions).forEach((colA) => {
-      const noteA = notes[colA];
-      const noteAElement = noteElements[colA];
-      let combinedText = notes[colA].text;
-      const collisionsWithKey = collisions[colA];
-      collisionsWithKey.forEach((colB) => {
-        const noteB = notes[colB];
-        const noteBElement = noteElements[colB];
-        combinedText += " " + noteB.text;
-        delete notes[colB];
-        noteBElement.innerHTML = '';
-        TweenMax.to(noteBElement, 0.3, {
-          width: "0px", height: "0px", onComplete: () => {
-              noteBElement.parentNode.removeChild(noteBElement)
-              delete noteElements[colB];
-          }});
-      });
-      noteAElement.innerHTML = '';
-      noteA.text = combinedText;
-      TweenMax.to(noteAElement, 0.3, {
-        width: "0px", height: "0px", onComplete: () => {
-          TweenMax.to(noteAElement, 0.3, { width: "100px", height: "100px",
-            onComplete: () => {
-              noteAElement.innerHTML = combinedText;
-          }});
+    Object.keys(collisions).forEach((key) => {
+      combinedText = '';
+      if (notes[key]) {
+        resolveCollisionKey(key);
+      }
+      notes[key].text = combinedText;
+      const noteElem = noteElements[key];
+      const noteText = noteElem.childNodes[0];
+      noteText.innerHTML = '';
+      TweenMax.to(noteElem, 0.3, {
+        width: '0px', height: '0px', onComplete: () => {
+          noteText.innerHTML = combinedText;
+          TweenMax.to(noteElem, 0.3, { width: '100px', height: '100px' });
         }
       });
     });
     collisions = undefined;
-    console.dir(notes);
-    console.dir(noteElements);
-    console.dir(collisions);
   }
-
 };
+
+// const resolveCollisions = () => {
+//   if (collisions) {
+//     Object.keys(collisions).forEach((colA) => {
+//       const noteA = notes[colA];
+//       const noteAElement = noteElements[colA];
+//       let combinedText = notes[colA].text;
+//       const collisionsWithKey = collisions[colA];
+//       collisionsWithKey.forEach((colB) => {
+//         const noteB = notes[colB];
+//         const noteBElement = noteElements[colB];
+//         combinedText += " " + noteB.text;
+//         delete notes[colB];
+//         noteBElement.innerHTML = '';
+//         TweenMax.to(noteBElement, 0.3, {
+//           width: "0px", height: "0px", onComplete: () => {
+//               noteBElement.parentNode.removeChild(noteBElement)
+//               delete noteElements[colB];
+//           }});
+//       });
+//       noteAElement.innerHTML = '';
+//       noteA.text = combinedText;
+//       TweenMax.to(noteAElement, 0.3, {
+//         width: "0px", height: "0px", onComplete: () => {
+//           TweenMax.to(noteAElement, 0.3, { width: "100px", height: "100px",
+//             onComplete: () => {
+//               noteAElement.innerHTML = combinedText;
+//           }});
+//         }
+//       });
+//     });
+//     collisions = undefined;
+//   }
+// };
 
 const updateCollisions = (collisionData) => {
     // update the saved collision data for later, we'll need it on mouse up

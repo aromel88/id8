@@ -30,7 +30,7 @@ const onMsg = (sock) => {
   socket.on('noCollisions', () => { board.noCollisions(socket); });
   socket.on('resolveCollisions', () => {
     socket.broadcast.to(socket.roomCode).emit('resolveCollisions');
-  })
+  });
 };
 
 const onDisconnect = (sock) => {

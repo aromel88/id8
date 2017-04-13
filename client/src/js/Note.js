@@ -149,7 +149,7 @@ const Note = (posX, posY, text, noteID, creatingNew) => {
     currentNote = newNote;
   } else {
     noteTextBox.style.display = 'none';
-    noteText.innerHTML = text;
+    noteText.innerHTML = 'text';
   }
 
   return newNote;
