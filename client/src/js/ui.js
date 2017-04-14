@@ -4,24 +4,21 @@ const board = require('./board');
 
 // DOM elements
 let landingScreen;
+let roomCodeDisplay;
 let landingControls;
 let connectControls;
-let makeButton;
-let joinButton;
-let connectButton;
-let backButton;
 let roomInput;
 let nameInput;
 let sidebar;
 let sidebarBreak;
-let menuButton;
 let menuButtonIcon;
 let copyRoomCodeInput;
 let userList;
+let roomCode;
 
 // connection logic variables
 let connectionType;
-let menuActive = false;
+let menuActive = true;
 
 const showConnectControls = (type) => {
   if (type === 'join') {
@@ -46,16 +43,31 @@ const hideConnectControls = () => {
   }});
 };
 
-const hideAll = (roomCode) => {
+const showRoomCode = (room) => {
+  TweenMax.to(landingScreen, 0.4, { left: "-250px" });
+  TweenMax.to(roomCodeDisplay, 0.4, { left: "50%" });
+  roomCode = room;
+  const displayCodeInput = document.querySelector('#display-code');
+  displayCodeInput.style.textAlign = 'center';
+  displayCodeInput.value = room;
+};
+
+const showBoard = () => {
+  const body = document.querySelector('body');
+  board.show();
+  setTimeout(() => { if (menuActive) showMenu(); }, 3000);
+
   copyRoomCodeInput.value = roomCode;
-  TweenMax.to(landingScreen, 0.5, {
+  TweenMax.to(roomCodeDisplay, 0.5, {
     opacity: 0,
     onComplete: () => {
+      roomCodeDisplay.style.display = 'none';
       landingScreen.style.display = 'none';
+      body.style.overflowX = 'auto';
     }
   });
   sidebar.style.display = 'block';
-  TweenMax.to(document.querySelector('body'), 0.5, { backgroundColor: "#F5F5F5" });
+  TweenMax.to(body, 0.5, { backgroundColor: "#F5F5F5" });
   TweenMax.to(sidebar, 0.5, { opacity: 1 });
 };
 
@@ -98,23 +110,30 @@ const init = () => {
   sidebar = document.querySelector('#sidebar');
   sidebarBreak = document.querySelector('#sidebar-break');
 
-  makeButton = document.querySelector('#make-button');
+  const makeButton = document.querySelector('#make-button');
   makeButton.addEventListener('click', () => {
     showConnectControls('make');
     connectionType = 'make';
   });
-  joinButton = document.querySelector('#join-button');
+  const joinButton = document.querySelector('#join-button');
   joinButton.addEventListener('click', () => {
     showConnectControls('join');
     connectionType = 'join';
   });
-  connectButton = document.querySelector('#connect-button');
+
+  roomCodeDisplay = document.querySelector('#room-code-display');
+  const goButton = document.querySelector('#go-button');
+  goButton.addEventListener('click', showBoard);
+
+  const connectButton = document.querySelector('#connect-button');
   connectButton.addEventListener('click', connect);
-  backButton = document.querySelector('#back-button');
+  const backButton = document.querySelector('#back-button');
   backButton.addEventListener('click', hideConnectControls);
-  menuButton = document.querySelector('#menu-button');
+  const menuButton = document.querySelector('#menu-button');
   menuButton.addEventListener('click', showMenu);
+
   menuButtonIcon = menuButton.childNodes[0];
+  menuButtonIcon.style.transform = 'rotate(180deg)';
   copyRoomCodeInput = document.querySelector('#copy-room-code');
   userList = document.querySelector('#user-list');
 
@@ -123,5 +142,5 @@ const init = () => {
 };
 
 module.exports.init = init;
-module.exports.hideAll = hideAll;
+module.exports.showRoomCode = showRoomCode;
 module.exports.updateUserList = updateUserList;

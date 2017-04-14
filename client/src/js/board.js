@@ -4,12 +4,14 @@ const client = require('./client');
 const note = require('./Note');
 
 const NOTE_SIZE = { x: 100, y: 100 };
+const TIPS = ['Double click anywhere to add a note','Drag one note onto another and let go to combine them'];
 
 let name;
 let board;
 let notes;
 let noteElements;
 let initialTip;
+let tipIndex = -1;
 let collisions;
 let combinedText;
 
@@ -40,6 +42,11 @@ const recieveBoard = (noteData) => {
       false
     );
   });
+};
+
+const show = () => {
+  board.style.display = 'block';
+  initialTip.style.display = 'block';
 };
 
 const draw = () => {
@@ -164,9 +171,7 @@ const updateCollisions = (collisionData) => {
 
 const setup = (data, roomCode) => {
   name = data;
-  ui.hideAll(roomCode);
-  board.style.display = 'block';
-  initialTip.style.display = 'block';
+  ui.showRoomCode(roomCode);
 };
 
 const noteAdded = (data) => {
@@ -175,7 +180,12 @@ const noteAdded = (data) => {
 };
 
 const addNote = (e) => {
-  initialTip.style.display = 'none';
+  tipIndex+=1;
+  if (tipIndex < TIPS.length) {
+    initialTip.innerHTML = TIPS[tipIndex];
+  } else {
+    initialTip.style.display = 'none';
+  }
   if (e.target.classList.contains('note')) {
     return;
   }
@@ -202,7 +212,6 @@ const addNote = (e) => {
 
 const updateNote = (dragData) => {
   const noteUpdate = notes[dragData.noteID];
-  //const noteDrag = noteElements[dragData.noteID];
   if (noteUpdate.lastUpdate > dragData.lastUpdate) return;
 
   noteUpdate.prevX = dragData.prevX;
@@ -210,8 +219,6 @@ const updateNote = (dragData) => {
   noteUpdate.destX = dragData.destX;
   noteUpdate.destY = dragData.destY;
   noteUpdate.alpha = 0.05;
-  //noteDrag.style.left = `${dragData.x}px`;
-  //noteDrag.style.top = `${dragData.y}px`;
 };
 
 const init = () => {
@@ -226,9 +233,7 @@ const init = () => {
   board.addEventListener('dblclick', addNote);
   notes = {};
   noteElements = {};
-  //draw();
   setInterval(draw, 30);
-  // show initial tip
   initialTip = document.querySelector('.tip');
 };
 
@@ -237,6 +242,7 @@ const getBoard = () => { return board; };
 
 module.exports.init = init;
 module.exports.setup = setup;
+module.exports.show = show;
 module.exports.board = getBoard;
 module.exports.recieveBoard = recieveBoard;
 module.exports.noteAdded = noteAdded;

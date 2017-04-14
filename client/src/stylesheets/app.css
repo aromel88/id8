@@ -9,7 +9,8 @@ body {
   width: 100%;
   height: 100vh;
   background-color: #4ABDAC;
-  font-family: "Roboto", sans-serif; }
+  font-family: "Roboto", sans-serif;
+  overflow-x: hidden; }
 
 /*
   _landing.scss
@@ -17,7 +18,7 @@ body {
 
   by Aaron Romel
 */
-.button, #make-button, #join-button, #connect-button, #back-button {
+.button, #make-button, #join-button, #go-button, #connect-button, #back-button {
   display: block;
   width: 212px;
   height: 40px;
@@ -32,12 +33,12 @@ body {
   left: 50%;
   transform: translate(-50%, 0);
   transition: width 0.15s, height 0.15s, box-shadow 0.15s; }
-  .button:hover, #make-button:hover, #join-button:hover, #connect-button:hover, #back-button:hover {
+  .button:hover, #make-button:hover, #join-button:hover, #go-button:hover, #connect-button:hover, #back-button:hover {
     cursor: pointer;
     box-shadow: 4px 7px 3px #E0E0E0, -4px -2px 3px #E0E0E0;
     width: 217px;
     height: 45px; }
-  .button:active, #make-button:active, #join-button:active, #connect-button:active, #back-button:active {
+  .button:active, #make-button:active, #join-button:active, #go-button:active, #connect-button:active, #back-button:active {
     box-shadow: 0px 3px 2px #E0E0E0;
     width: 212px;
     height: 40px; }
@@ -85,6 +86,26 @@ input[type='text'] {
   position: relative;
   margin-bottom: 10px; }
 
+/* room code display screen */
+#room-code-display {
+  position: absolute;
+  background-color: white;
+  width: 500px;
+  height: 300px;
+  top: 50%;
+  left: calc(100% + 250px);
+  transform: translate(-50%, -50%);
+  border-radius: 5px;
+  box-shadow: 0px 7px 5px rgba(0, 0, 0, 0.4); }
+
+#room-code-display h1 {
+  margin: 20px;
+  text-align: center;
+  color: rgba(0, 0, 0, 0.73); }
+
+#go-button {
+  top: 200px; }
+
 #copy-room-code {
   position: relative;
   top: 75px;
@@ -103,7 +124,7 @@ input[type='text'] {
   height: 100vh;
   background-color: rgba(0, 0, 0, 0.7);
   position: relative;
-  left: -300px;
+  left: 0px;
   top: -100vh;
   opacity: 0;
   color: white; }
