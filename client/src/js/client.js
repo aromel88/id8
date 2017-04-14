@@ -40,6 +40,7 @@ const connect = (connectData) => {
   socket.on('updateCollisions', board.updateCollisions);
   socket.on('noCollisions', board.updateCollisions);
   socket.on('resolveCollisions', board.resolveCollisions);
+  socket.on('adminDisconnect', ui.adminDisconnect);
 
   // attempt connection with websocket server
   socket.emit('attemptConnect', connectData);

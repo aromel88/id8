@@ -14,6 +14,7 @@ let initialTip;
 let tipIndex = -1;
 let collisions;
 let combinedText;
+let drawID;
 
 const noteUpdated = (noteData) => {
   const noteToUpdate = notes[noteData.noteID];
@@ -47,6 +48,10 @@ const recieveBoard = (noteData) => {
 const show = () => {
   board.style.display = 'block';
   initialTip.style.display = 'block';
+};
+
+const cancelDraw = () => {
+  clearInterval(drawID);
 };
 
 const draw = () => {
@@ -107,40 +112,6 @@ const resolveCollisions = () => {
     collisions = undefined;
   }
 };
-
-// const resolveCollisions = () => {
-//   if (collisions) {
-//     Object.keys(collisions).forEach((colA) => {
-//       const noteA = notes[colA];
-//       const noteAElement = noteElements[colA];
-//       let combinedText = notes[colA].text;
-//       const collisionsWithKey = collisions[colA];
-//       collisionsWithKey.forEach((colB) => {
-//         const noteB = notes[colB];
-//         const noteBElement = noteElements[colB];
-//         combinedText += " " + noteB.text;
-//         delete notes[colB];
-//         noteBElement.innerHTML = '';
-//         TweenMax.to(noteBElement, 0.3, {
-//           width: "0px", height: "0px", onComplete: () => {
-//               noteBElement.parentNode.removeChild(noteBElement)
-//               delete noteElements[colB];
-//           }});
-//       });
-//       noteAElement.innerHTML = '';
-//       noteA.text = combinedText;
-//       TweenMax.to(noteAElement, 0.3, {
-//         width: "0px", height: "0px", onComplete: () => {
-//           TweenMax.to(noteAElement, 0.3, { width: "100px", height: "100px",
-//             onComplete: () => {
-//               noteAElement.innerHTML = combinedText;
-//           }});
-//         }
-//       });
-//     });
-//     collisions = undefined;
-//   }
-// };
 
 const updateCollisions = (collisionData) => {
     // update the saved collision data for later, we'll need it on mouse up
@@ -233,7 +204,7 @@ const init = () => {
   board.addEventListener('dblclick', addNote);
   notes = {};
   noteElements = {};
-  setInterval(draw, 30);
+  drawID = setInterval(draw, 30);
   initialTip = document.querySelector('.tip');
 };
 
@@ -242,6 +213,7 @@ const getBoard = () => { return board; };
 
 module.exports.init = init;
 module.exports.setup = setup;
+module.exports.cancelDraw = cancelDraw;
 module.exports.show = show;
 module.exports.board = getBoard;
 module.exports.recieveBoard = recieveBoard;

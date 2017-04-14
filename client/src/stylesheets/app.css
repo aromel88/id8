@@ -18,7 +18,7 @@ body {
 
   by Aaron Romel
 */
-.button, #make-button, #join-button, #go-button, #connect-button, #back-button {
+.button, #make-button, #join-button, #go-button, #error-dialog-button, #connect-button, #back-button {
   display: block;
   width: 212px;
   height: 40px;
@@ -33,12 +33,12 @@ body {
   left: 50%;
   transform: translate(-50%, 0);
   transition: width 0.15s, height 0.15s, box-shadow 0.15s; }
-  .button:hover, #make-button:hover, #join-button:hover, #go-button:hover, #connect-button:hover, #back-button:hover {
+  .button:hover, #make-button:hover, #join-button:hover, #go-button:hover, #error-dialog-button:hover, #connect-button:hover, #back-button:hover {
     cursor: pointer;
     box-shadow: 4px 7px 3px #E0E0E0, -4px -2px 3px #E0E0E0;
     width: 217px;
     height: 45px; }
-  .button:active, #make-button:active, #join-button:active, #go-button:active, #connect-button:active, #back-button:active {
+  .button:active, #make-button:active, #join-button:active, #go-button:active, #error-dialog-button:active, #connect-button:active, #back-button:active {
     box-shadow: 0px 3px 2px #E0E0E0;
     width: 212px;
     height: 40px; }
@@ -98,12 +98,12 @@ input[type='text'] {
   border-radius: 5px;
   box-shadow: 0px 7px 5px rgba(0, 0, 0, 0.4); }
 
-#room-code-display h1 {
+#room-code-display h1, #disconnect-dialog h1 {
   margin: 20px;
   text-align: center;
   color: rgba(0, 0, 0, 0.73); }
 
-#go-button {
+#go-button, #error-dialog-button {
   top: 200px; }
 
 #copy-room-code {
@@ -174,6 +174,25 @@ input[type='text'] {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%); }
+
+/* error styles */
+#server-disconnect-error {
+  width: 100%;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  display: none; }
+
+#disconnect-dialog {
+  position: absolute;
+  background-color: white;
+  width: 500px;
+  height: 300px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 5px;
+  box-shadow: 0px 7px 5px rgba(0, 0, 0, 0.4); }
 
 #board {
   display: none;

@@ -90,6 +90,7 @@ var initialTip = void 0;
 var tipIndex = -1;
 var collisions = void 0;
 var combinedText = void 0;
+var drawID = void 0;
 
 var noteUpdated = function noteUpdated(noteData) {
   var noteToUpdate = notes[noteData.noteID];
@@ -117,6 +118,10 @@ var recieveBoard = function recieveBoard(noteData) {
 var show = function show() {
   board.style.display = 'block';
   initialTip.style.display = 'block';
+};
+
+var cancelDraw = function cancelDraw() {
+  clearInterval(drawID);
 };
 
 var draw = function draw() {
@@ -177,40 +182,6 @@ var resolveCollisions = function resolveCollisions() {
     collisions = undefined;
   }
 };
-
-// const resolveCollisions = () => {
-//   if (collisions) {
-//     Object.keys(collisions).forEach((colA) => {
-//       const noteA = notes[colA];
-//       const noteAElement = noteElements[colA];
-//       let combinedText = notes[colA].text;
-//       const collisionsWithKey = collisions[colA];
-//       collisionsWithKey.forEach((colB) => {
-//         const noteB = notes[colB];
-//         const noteBElement = noteElements[colB];
-//         combinedText += " " + noteB.text;
-//         delete notes[colB];
-//         noteBElement.innerHTML = '';
-//         TweenMax.to(noteBElement, 0.3, {
-//           width: "0px", height: "0px", onComplete: () => {
-//               noteBElement.parentNode.removeChild(noteBElement)
-//               delete noteElements[colB];
-//           }});
-//       });
-//       noteAElement.innerHTML = '';
-//       noteA.text = combinedText;
-//       TweenMax.to(noteAElement, 0.3, {
-//         width: "0px", height: "0px", onComplete: () => {
-//           TweenMax.to(noteAElement, 0.3, { width: "100px", height: "100px",
-//             onComplete: () => {
-//               noteAElement.innerHTML = combinedText;
-//           }});
-//         }
-//       });
-//     });
-//     collisions = undefined;
-//   }
-// };
 
 var updateCollisions = function updateCollisions(collisionData) {
   // update the saved collision data for later, we'll need it on mouse up
@@ -303,7 +274,7 @@ var init = function init() {
   board.addEventListener('dblclick', addNote);
   notes = {};
   noteElements = {};
-  setInterval(draw, 30);
+  drawID = setInterval(draw, 30);
   initialTip = document.querySelector('.tip');
 };
 
@@ -316,6 +287,7 @@ var getBoard = function getBoard() {
 
 module.exports.init = init;
 module.exports.setup = setup;
+module.exports.cancelDraw = cancelDraw;
 module.exports.show = show;
 module.exports.board = getBoard;
 module.exports.recieveBoard = recieveBoard;
@@ -375,6 +347,7 @@ var connect = function connect(connectData) {
   socket.on('updateCollisions', board.updateCollisions);
   socket.on('noCollisions', board.updateCollisions);
   socket.on('resolveCollisions', board.resolveCollisions);
+  socket.on('adminDisconnect', ui.adminDisconnect);
 
   // attempt connection with websocket server
   socket.emit('attemptConnect', connectData);
@@ -408,6 +381,7 @@ var board = __webpack_require__(0);
 // DOM elements
 var landingScreen = void 0;
 var roomCodeDisplay = void 0;
+var serverDisconnectError = void 0;
 var landingControls = void 0;
 var connectControls = void 0;
 var roomInput = void 0;
@@ -487,6 +461,27 @@ var showMenu = function showMenu() {
   }
 };
 
+var adminDisconnect = function adminDisconnect() {
+  client.disconnect();
+  board.cancelDraw();
+  serverDisconnectError.style.display = 'block';
+  TweenMax.to(document.querySelector('#board'), 0.3, { opacity: 0 });
+  TweenMax.to(serverDisconnectError, 0.3, { opacity: 1 });
+};
+
+var goHome = function goHome() {
+  document.querySelector('#board').style.display = 'none';
+  sidebar.style.display = 'none';
+  serverDisconnectError.style.display = 'none';
+  landingScreen.style.display = 'block';
+  landingScreen.style.left = '50%';
+  roomCodeDisplay.style.left = 'calc(100% + 250px)';
+  roomCodeDisplay.style.opacity = 1;
+  roomCodeDisplay.style.display = 'block';
+  hideConnectControls();
+  document.querySelector('body').style.backgroundColor = '#4ABDAC';
+};
+
 var connect = function connect() {
   var connectData = {
     type: connectionType,
@@ -530,6 +525,10 @@ var init = function init() {
   var goButton = document.querySelector('#go-button');
   goButton.addEventListener('click', showBoard);
 
+  serverDisconnectError = document.querySelector('#server-disconnect-error');
+  var errorDialogButton = document.querySelector('#error-dialog-button');
+  errorDialogButton.addEventListener('click', goHome);
+
   var connectButton = document.querySelector('#connect-button');
   connectButton.addEventListener('click', connect);
   var backButton = document.querySelector('#back-button');
@@ -549,6 +548,7 @@ var init = function init() {
 module.exports.init = init;
 module.exports.showRoomCode = showRoomCode;
 module.exports.updateUserList = updateUserList;
+module.exports.adminDisconnect = adminDisconnect;
 
 /***/ }),
 /* 3 */
@@ -2755,7 +2755,7 @@ exports = module.exports = __webpack_require__(10)(undefined);
 
 
 // module
-exports.push([module.i, "* {\n  margin: 0;\n  padding: 0; }\n\n*:focus {\n  outline: none; }\n\nbody {\n  width: 100%;\n  height: 100vh;\n  background-color: #4ABDAC;\n  font-family: \"Roboto\", sans-serif;\n  overflow-x: hidden; }\n\n/*\n  _landing.scss\n  styles for landing screen\n\n  by Aaron Romel\n*/\n.button, #make-button, #join-button, #go-button, #connect-button, #back-button {\n  display: block;\n  width: 212px;\n  height: 40px;\n  margin: auto;\n  background-color: #FC4A1A;\n  color: white;\n  box-shadow: 0px 3px 2px #E0E0E0;\n  border: none;\n  border-radius: 3px;\n  font-size: 1.1em;\n  position: absolute;\n  left: 50%;\n  transform: translate(-50%, 0);\n  transition: width 0.15s, height 0.15s, box-shadow 0.15s; }\n  .button:hover, #make-button:hover, #join-button:hover, #go-button:hover, #connect-button:hover, #back-button:hover {\n    cursor: pointer;\n    box-shadow: 4px 7px 3px #E0E0E0, -4px -2px 3px #E0E0E0;\n    width: 217px;\n    height: 45px; }\n  .button:active, #make-button:active, #join-button:active, #go-button:active, #connect-button:active, #back-button:active {\n    box-shadow: 0px 3px 2px #E0E0E0;\n    width: 212px;\n    height: 40px; }\n\n#landing-screen {\n  position: absolute;\n  background-color: white;\n  width: 500px;\n  height: 400px;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%);\n  border-radius: 5px;\n  box-shadow: 0px 7px 5px rgba(0, 0, 0, 0.4); }\n\n#landing-screen img {\n  margin: auto;\n  position: absolute;\n  left: 50%;\n  top: 20px;\n  transform: translate(-50%, 0); }\n\n#landing-controls {\n  position: relative;\n  top: 250px; }\n\n#join-button {\n  top: 55px; }\n\n/* connect controls */\n#connect-controls {\n  opacity: 0;\n  display: none;\n  position: relative;\n  top: 250px; }\n\ninput[type='text'] {\n  display: block;\n  margin: auto;\n  width: 200px;\n  padding: 4px;\n  font-size: 1em;\n  border-radius: 4px;\n  border: 2px solid #E0E0E0;\n  position: relative;\n  margin-bottom: 10px; }\n\n/* room code display screen */\n#room-code-display {\n  position: absolute;\n  background-color: white;\n  width: 500px;\n  height: 300px;\n  top: 50%;\n  left: calc(100% + 250px);\n  transform: translate(-50%, -50%);\n  border-radius: 5px;\n  box-shadow: 0px 7px 5px rgba(0, 0, 0, 0.4); }\n\n#room-code-display h1 {\n  margin: 20px;\n  text-align: center;\n  color: rgba(0, 0, 0, 0.73); }\n\n#go-button {\n  top: 200px; }\n\n#copy-room-code {\n  position: relative;\n  top: 75px;\n  left: -50px;\n  text-align: center; }\n\n#connect-button {\n  top: 125px; }\n\n#back-button {\n  background-color: #4ABDAC;\n  top: 180px; }\n\n#sidebar {\n  width: 350px;\n  height: 100vh;\n  background-color: rgba(0, 0, 0, 0.7);\n  position: relative;\n  left: 0px;\n  top: -100vh;\n  opacity: 0;\n  color: white; }\n\n#sidebar p {\n  position: relative;\n  left: 50px; }\n\n#sidebar-break {\n  width: 2px;\n  height: 100vh;\n  background-color: #FC4A1A;\n  position: absolute;\n  left: 300px;\n  top: 0px; }\n\n#menu-button {\n  top: 20px;\n  position: absolute;\n  text-align: center;\n  line-height: 30px;\n  left: 300px;\n  width: 30px;\n  height: 30px;\n  padding-left: 10px;\n  padding-right: 10px;\n  color: #4ABDAC; }\n\n#menu-button:hover {\n  background-color: white;\n  cursor: pointer; }\n\n#user-list {\n  list-style-type: none;\n  position: absolute;\n  top: 130px;\n  left: 20px; }\n\n.tip {\n  width: 800px;\n  text-align: center;\n  color: #E0E0E0;\n  border: 2px solid #E0E0E0;\n  border-radius: 4px;\n  display: none;\n  position: absolute;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%); }\n\n#board {\n  display: none;\n  height: 100vh;\n  width: 100%;\n  overflow: auto; }\n\n.note {\n  width: 100px;\n  height: auto;\n  min-height: 100px;\n  background-color: white;\n  position: absolute;\n  transition: left .1s, top .1s;\n  border-radius: 4px;\n  box-shadow: 0px 4px 2px rgba(0, 0, 0, 0.4); }\n\n.note:hover {\n  opacity: 0.6;\n  cursor: pointer; }\n\n.note:active {\n  opacity: 1;\n  cursor: grab; }\n\n.note textarea {\n  border: none;\n  resize: none;\n  position: relative;\n  top: 5px;\n  left: 5px;\n  font-family: \"Roboto\", sans-serif;\n  font-size: 1em;\n  background-color: transparent; }\n\n.note p {\n  pointer-events: none;\n  position: relative;\n  top: 5px;\n  left: 5px;\n  width: 90px;\n  height: 90px;\n  word-wrap: break-word; }\n\n.note-delete-button {\n  width: 10px;\n  height: 10px;\n  border-radius: 10px;\n  text-align: center;\n  line-height: 10px;\n  background-color: #FFFFFF;\n  color: #000000;\n  display: none; }\n\n/*# sourceMappingURL=app.css.map */\n", ""]);
+exports.push([module.i, "* {\n  margin: 0;\n  padding: 0; }\n\n*:focus {\n  outline: none; }\n\nbody {\n  width: 100%;\n  height: 100vh;\n  background-color: #4ABDAC;\n  font-family: \"Roboto\", sans-serif;\n  overflow-x: hidden; }\n\n/*\n  _landing.scss\n  styles for landing screen\n\n  by Aaron Romel\n*/\n.button, #make-button, #join-button, #go-button, #error-dialog-button, #connect-button, #back-button {\n  display: block;\n  width: 212px;\n  height: 40px;\n  margin: auto;\n  background-color: #FC4A1A;\n  color: white;\n  box-shadow: 0px 3px 2px #E0E0E0;\n  border: none;\n  border-radius: 3px;\n  font-size: 1.1em;\n  position: absolute;\n  left: 50%;\n  transform: translate(-50%, 0);\n  transition: width 0.15s, height 0.15s, box-shadow 0.15s; }\n  .button:hover, #make-button:hover, #join-button:hover, #go-button:hover, #error-dialog-button:hover, #connect-button:hover, #back-button:hover {\n    cursor: pointer;\n    box-shadow: 4px 7px 3px #E0E0E0, -4px -2px 3px #E0E0E0;\n    width: 217px;\n    height: 45px; }\n  .button:active, #make-button:active, #join-button:active, #go-button:active, #error-dialog-button:active, #connect-button:active, #back-button:active {\n    box-shadow: 0px 3px 2px #E0E0E0;\n    width: 212px;\n    height: 40px; }\n\n#landing-screen {\n  position: absolute;\n  background-color: white;\n  width: 500px;\n  height: 400px;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%);\n  border-radius: 5px;\n  box-shadow: 0px 7px 5px rgba(0, 0, 0, 0.4); }\n\n#landing-screen img {\n  margin: auto;\n  position: absolute;\n  left: 50%;\n  top: 20px;\n  transform: translate(-50%, 0); }\n\n#landing-controls {\n  position: relative;\n  top: 250px; }\n\n#join-button {\n  top: 55px; }\n\n/* connect controls */\n#connect-controls {\n  opacity: 0;\n  display: none;\n  position: relative;\n  top: 250px; }\n\ninput[type='text'] {\n  display: block;\n  margin: auto;\n  width: 200px;\n  padding: 4px;\n  font-size: 1em;\n  border-radius: 4px;\n  border: 2px solid #E0E0E0;\n  position: relative;\n  margin-bottom: 10px; }\n\n/* room code display screen */\n#room-code-display {\n  position: absolute;\n  background-color: white;\n  width: 500px;\n  height: 300px;\n  top: 50%;\n  left: calc(100% + 250px);\n  transform: translate(-50%, -50%);\n  border-radius: 5px;\n  box-shadow: 0px 7px 5px rgba(0, 0, 0, 0.4); }\n\n#room-code-display h1, #disconnect-dialog h1 {\n  margin: 20px;\n  text-align: center;\n  color: rgba(0, 0, 0, 0.73); }\n\n#go-button, #error-dialog-button {\n  top: 200px; }\n\n#copy-room-code {\n  position: relative;\n  top: 75px;\n  left: -50px;\n  text-align: center; }\n\n#connect-button {\n  top: 125px; }\n\n#back-button {\n  background-color: #4ABDAC;\n  top: 180px; }\n\n#sidebar {\n  width: 350px;\n  height: 100vh;\n  background-color: rgba(0, 0, 0, 0.7);\n  position: relative;\n  left: 0px;\n  top: -100vh;\n  opacity: 0;\n  color: white; }\n\n#sidebar p {\n  position: relative;\n  left: 50px; }\n\n#sidebar-break {\n  width: 2px;\n  height: 100vh;\n  background-color: #FC4A1A;\n  position: absolute;\n  left: 300px;\n  top: 0px; }\n\n#menu-button {\n  top: 20px;\n  position: absolute;\n  text-align: center;\n  line-height: 30px;\n  left: 300px;\n  width: 30px;\n  height: 30px;\n  padding-left: 10px;\n  padding-right: 10px;\n  color: #4ABDAC; }\n\n#menu-button:hover {\n  background-color: white;\n  cursor: pointer; }\n\n#user-list {\n  list-style-type: none;\n  position: absolute;\n  top: 130px;\n  left: 20px; }\n\n.tip {\n  width: 800px;\n  text-align: center;\n  color: #E0E0E0;\n  border: 2px solid #E0E0E0;\n  border-radius: 4px;\n  display: none;\n  position: absolute;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%); }\n\n/* error styles */\n#server-disconnect-error {\n  width: 100%;\n  height: 100vh;\n  background-color: rgba(0, 0, 0, 0.4);\n  opacity: 0;\n  display: none; }\n\n#disconnect-dialog {\n  position: absolute;\n  background-color: white;\n  width: 500px;\n  height: 300px;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%);\n  border-radius: 5px;\n  box-shadow: 0px 7px 5px rgba(0, 0, 0, 0.4); }\n\n#board {\n  display: none;\n  height: 100vh;\n  width: 100%;\n  overflow: auto; }\n\n.note {\n  width: 100px;\n  height: auto;\n  min-height: 100px;\n  background-color: white;\n  position: absolute;\n  transition: left .1s, top .1s;\n  border-radius: 4px;\n  box-shadow: 0px 4px 2px rgba(0, 0, 0, 0.4); }\n\n.note:hover {\n  opacity: 0.6;\n  cursor: pointer; }\n\n.note:active {\n  opacity: 1;\n  cursor: grab; }\n\n.note textarea {\n  border: none;\n  resize: none;\n  position: relative;\n  top: 5px;\n  left: 5px;\n  font-family: \"Roboto\", sans-serif;\n  font-size: 1em;\n  background-color: transparent; }\n\n.note p {\n  pointer-events: none;\n  position: relative;\n  top: 5px;\n  left: 5px;\n  width: 90px;\n  height: 90px;\n  word-wrap: break-word; }\n\n.note-delete-button {\n  width: 10px;\n  height: 10px;\n  border-radius: 10px;\n  text-align: center;\n  line-height: 10px;\n  background-color: #FFFFFF;\n  color: #000000;\n  display: none; }\n\n/*# sourceMappingURL=app.css.map */\n", ""]);
 
 // exports
 

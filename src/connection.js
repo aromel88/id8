@@ -56,4 +56,17 @@ const attemptConnect = (sock, data) => {
   }
 };
 
+const handleDisconnect = (sock) => {
+  const socket = sock;
+  if (socket.admin) {
+    socket.broadcast.to(socket.roomCode).emit('adminDisconnect');
+  } else {
+    const room = server.rooms[socket.roomCode];
+    const user = socket.name;
+    room.userList.splice(room.userList.indexOf(user), 1);
+    socket.broadcast.to(socket.roomCode).emit('updateUserList', room.userList);
+  }
+};
+
 module.exports.attemptConnect = attemptConnect;
+module.exports.handleDisconnect = handleDisconnect;

@@ -37,7 +37,7 @@ const onDisconnect = (sock) => {
   const socket = sock;
 
   socket.on('disconnect', () => {
-    // connectionHandler.handleDisconnect(socket);
+    connectionHandler.handleDisconnect(socket);
   });
 };
 

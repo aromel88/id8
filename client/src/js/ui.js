@@ -5,6 +5,7 @@ const board = require('./board');
 // DOM elements
 let landingScreen;
 let roomCodeDisplay;
+let serverDisconnectError;
 let landingControls;
 let connectControls;
 let roomInput;
@@ -82,6 +83,27 @@ const showMenu = () => {
   }
 };
 
+const adminDisconnect = () => {
+  client.disconnect();
+  board.cancelDraw();
+  serverDisconnectError.style.display = 'block';
+  TweenMax.to(document.querySelector('#board'), 0.3, {opacity: 0});
+  TweenMax.to(serverDisconnectError, 0.3, { opacity: 1 });
+};
+
+const goHome = () => {
+  document.querySelector('#board').style.display = 'none';
+  sidebar.style.display = 'none';
+  serverDisconnectError.style.display = 'none';
+  landingScreen.style.display = 'block';
+  landingScreen.style.left = '50%';
+  roomCodeDisplay.style.left = 'calc(100% + 250px)';
+  roomCodeDisplay.style.opacity = 1;
+  roomCodeDisplay.style.display = 'block';
+  hideConnectControls();
+  document.querySelector('body').style.backgroundColor = '#4ABDAC';
+};
+
 const connect = () => {
   const connectData = {
     type: connectionType,
@@ -125,6 +147,10 @@ const init = () => {
   const goButton = document.querySelector('#go-button');
   goButton.addEventListener('click', showBoard);
 
+  serverDisconnectError = document.querySelector('#server-disconnect-error');
+  const errorDialogButton = document.querySelector('#error-dialog-button');
+  errorDialogButton.addEventListener('click', goHome);
+
   const connectButton = document.querySelector('#connect-button');
   connectButton.addEventListener('click', connect);
   const backButton = document.querySelector('#back-button');
@@ -144,3 +170,4 @@ const init = () => {
 module.exports.init = init;
 module.exports.showRoomCode = showRoomCode;
 module.exports.updateUserList = updateUserList;
+module.exports.adminDisconnect = adminDisconnect;
